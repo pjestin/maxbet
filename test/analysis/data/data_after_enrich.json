@@ -1,0 +1,16 @@
+{
+  "2018-08-15T11:57+0000 FC Barcelona - Anderlecht": {
+    "datetime": "2018-08-15T11:57+0000",
+    "sides": {
+      "1": {
+        "name": "FC Barcelona",
+        "score": 1
+      },
+      "N": {},
+      "2": {
+        "name": "Anderlecht",
+        "score": 0
+      }
+    }
+  }
+}
