@@ -9,7 +9,7 @@ import re
 import unidecode
 
 URL_ROOT = 'https://www.scibet.com/football/{}'
-FILE_PATH_ROOT = 'data/scibet/league-{}.html'
+FILE_PATH_ROOT = 'cache/scibet/league-{}.html'
 LEAGUE_URLS = {1818: 'europe/champions-league', 1849: 'netherlands/eredivisie', 1844: 'france/ligue-2',
                2411: 'england/premier-league', 1951: 'united-states/major-league-soccer', 2105: 'brazil/serie-a',
                1882: 'turkey/super-lig', 1845: 'germany/bundesliga-1', 1869: 'spain/primera-division',
@@ -27,14 +27,12 @@ SCIBET = 'Scibet'
 STYLE_PATTERN = '.*width:(\d*.?\d*)%.*'
 
 
-def get_matches_with_odds_from_file(file_path):
+def get_matches_from_file(file_path):
     matches = []
     with open(file_path, encoding='latin_1') as file:
         soup = BeautifulSoup(file, 'html.parser')
         bettable = soup.find('table')
         for row in bettable.find_all('tr'):
-            if not row.find('span', {'title': 'Finished'}):
-                continue
             odds = []
             match_datetime = None
             for span in row.find_all('span'):
@@ -46,28 +44,34 @@ def get_matches_with_odds_from_file(file_path):
                     odds.append(float(span.attrs['data-odds']))
             team1 = unidecode.unidecode(row.find('td', {'class': 'tar'}).a.string)
             team2 = unidecode.unidecode(row.find('td', {'class': 'tal'}).a.string)
-            score = row.find('td', {'style': 'width:6%'}).a.strong.string
-            score_reg = re.match('(\d*) - (\d*)', score)
-            score1 = int(score_reg.group(1))
-            score2 = int(score_reg.group(2))
-            probs = [re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-success'}).attrs['style']).group(1),
-                     re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-warning'}).attrs['style']).group(1),
-                     re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-danger'}).attrs['style']).group(1)]
             match = Match(match_datetime, team1, team2)
-            match.teams['1'].score = score1
-            match.teams['2'].score = score2
-            if len(odds) < 3 or len(probs) < 3:
-                continue
-            i = 0
-            for side in ['1', 'N', '2']:
-                match.teams[side].odds[SCIBET] = odds[i]
-                match.teams[side].prob = float(probs[i]) / 100.0
-                i += 1
+            if row.find('span', {'title': 'Finished'}):
+                score = row.find('td', {'style': 'width:6%'}).a.strong.string
+                score_reg = re.match('(\d*) - (\d*)', score)
+                score1 = int(score_reg.group(1))
+                score2 = int(score_reg.group(2))
+                match.teams['1'].score = score1
+                match.teams['2'].score = score2
+            else:
+                probs = []
+                if row.find('div', {'class': 'bar bar-success'}):
+                    probs.append(re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-success'}).attrs['style']))
+                if row.find('div', {'class': 'bar bar-success'}):
+                    probs.append(re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-warning'}).attrs['style']))
+                if row.find('div', {'class': 'bar bar-success'}):
+                    probs.append(re.match(STYLE_PATTERN, row.find('div', {'class': 'bar bar-danger'}).attrs['style']))
+                i = 0
+                for side in ['1', 'N', '2']:
+                    if len(odds) == 3:
+                        match.teams[side].odds[SCIBET] = odds[i]
+                    if len(probs) == 3 and probs[i]:
+                        match.teams[side].probs[SCIBET] = float(probs[i].group(1)) / 100.0
+                    i += 1
             matches.append(match)
     return matches
 
 
-def get_matches_with_odds_for_league(league_id):
+def get_matches_for_league(league_id):
     print('Processing league {}'.format(league_id))
     if league_id not in LEAGUE_URLS:
         print('Unrecognized league: {}'.format(league_id))
@@ -75,17 +79,17 @@ def get_matches_with_odds_for_league(league_id):
     url = URL_ROOT.format(LEAGUE_URLS[league_id])
     file_path = FILE_PATH_ROOT.format(league_id)
     download.download_data(url, file_path)
-    return get_matches_with_odds_from_file(file_path)
+    return get_matches_from_file(file_path)
 
 
-def get_finished_matches_by_league():
+def get_matches_by_league():
     matches_by_league = {}
     for league_id in LEAGUE_URLS:
-        matches = get_matches_with_odds_for_league(league_id)
+        matches = get_matches_for_league(league_id)
         matches_by_league[league_id] = matches
     return matches_by_league
 
 
-def get_finished_matches():
-    matches = get_finished_matches_by_league().values()
+def get_matches():
+    matches = get_matches_by_league().values()
     return [match for sublist in matches for match in sublist]

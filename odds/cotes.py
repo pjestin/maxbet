@@ -11,7 +11,7 @@ import unidecode
 
 
 URL_ROOT = 'http://www.cotes.fr/football/{}'
-FILE_PATH_ROOT = 'data/cotes/league-{}.html'
+FILE_PATH_ROOT = 'cache/cotes/league-{}.html'
 LEAGUE_URLS = {1818: 'Ligue-des-Champions-ed7', 1849: 'Pays-Bas-Eredivisie-ed10', 1844: 'France-Ligue-2-ed9',
                2411: 'Angleterre-Premier-League-ed2', 1951: 'Etats-Unis-MLS-ed60', 2105: 'Bresil-Campeonato-ed116',
                1882: 'Turquie-Super-Lig-ed50', 1845: 'Allemagne-Bundesliga-ed4', 1869: 'Espagne-LaLiga-ed6',

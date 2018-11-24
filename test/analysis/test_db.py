@@ -9,6 +9,8 @@ DATA_AFTER_REGISTER_FILE = 'test/analysis/data/data_after_register.json'
 DATA_BEFORE_ENRICH_FILE = 'test/analysis/data/data_before_enrich.json'
 DATA_AFTER_ENRICH_FILE = 'test/analysis/data/data_after_enrich.json'
 
+FIVETHIRTYEIGHT = '538'
+
 
 class DbTest(unittest.TestCase):
 
@@ -46,13 +48,19 @@ class DbTest(unittest.TestCase):
         match.teams['N'].odds = {self.website_1: self.odd_1}
         match.teams['2'].odds = {self.website_2: self.odd_2}
         data = {}
-        db.update_data([match], data)
+        db.enrich_data([match], data)
         self.assertEqual(self.data_after_register, data)
 
-    def test_get_enriched_data(self):
+    @patch('datetime.datetime')
+    def test_get_enriched_data(self, mocked_datetime):
+        mocked_datetime.utcnow.return_value = self.time - timedelta(minutes=3251)
+        mocked_datetime.strptime = datetime.strptime
         match = Match(self.time, self.team_1_name_similar, self.team_2_name)
         match.teams['1'].score = 1
         match.teams['2'].score = 0
+        match.teams['1'].probs = {FIVETHIRTYEIGHT: 0.38}
+        match.teams['N'].probs = {FIVETHIRTYEIGHT: 0.45}
+        match.teams['2'].probs = {FIVETHIRTYEIGHT: 0.22}
         data = self.data_before_enrich
         db.enrich_data([match], data)
         self.assertEqual(self.data_after_enrich, data)

@@ -104,6 +104,4 @@ venv.bak/
 .mypy_cache/
 
 # maxbet cache data
-data/scibet
-data/cotes
-data/zebet
+cache/

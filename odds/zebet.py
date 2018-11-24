@@ -15,7 +15,7 @@ HTML_URLS = {2411: '94-premier_league', 1844: '97-dominos_ligue_2', 1951: '5-maj
              1975: '2807-primera_division_mex', 5641: '2530-primera_division_arg', 1856: '604-serie_b',
              2417: '100-scottish_premiership', 2412: '202-championship', 1832: '101-pro_league_1a',
              1837: '130-superligaen', 1884: '169-super_league_gre'}
-HTML_PATH = 'data/zebet/league-{}.html'
+HTML_PATH = 'cache/zebet/league-{}.html'
 WEBSITE = 'ZEbet'
 
 

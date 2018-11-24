@@ -2,11 +2,9 @@
 # coding: utf-8
 
 import distribution
-from odds import cotes, scibet
+from odds import cotes, scibet, fivethirtyeight
 from analysis import db
 from analysis.simulation import ValueBetSimulation
-import fivethirtyeight
-from analysis import stats
 import scipy.optimize as optimize
 
 
@@ -28,18 +26,14 @@ def print_value_bets(send_mail=False):
 
 
 def register_matches():
-    matches_projections = cotes.get_matches_with_odds()
-    db.register(matches_projections)
-    matches_by_league = scibet.get_finished_matches_by_league()
-    finished_matches = []
-    for matches_for_this_league in matches_by_league.values():
-        finished_matches.extend(matches_for_this_league)
-    db.enrich(finished_matches)
+    db.enrich(cotes.get_matches_with_odds())
+    db.enrich(scibet.get_matches())
+    db.enrich(fivethirtyeight.get_matches())
 
 
 def find_best_parameters():
     match_data = db.get_match_data()
-    x0 = [0.26, 0.95, 0.016, 0.3]
+    x0 = [0., 1.03, 0.05, 1.2]
     bounds = [(0., 1.), (0., 2.), (0., 2.), (0., 5.)]
     result = optimize.minimize(fun=lambda x: -ValueBetSimulation.simulate_bets(match_data, x),
                                x0=x0, bounds=bounds, method='SLSQP', options={'eps': 0.001})
@@ -52,17 +46,18 @@ def find_best_parameters():
 
 def print_analysis():
     match_data = db.get_match_data()
-    params = [0.26, 0.94996, 0.017, 0.3]
-    ValueBetSimulation.simulate_bets(match_data, params)
+    # stats.stats_on_return(match_data)
+    params = [0., 1.03, 0.05, 1.2]
+    ValueBetSimulation.simulate_bets(match_data, params, plot=True)
     # ValueBetSimulation.simulate_contributions(match_data, params=params)
 
 
 def main():
     # print_interesting_matches()
     # print_value_bets()
-    # register_matches()
+    register_matches()
     # find_best_parameters()
-    print_analysis()
+    # print_analysis()
 
 
 if __name__ == '__main__':

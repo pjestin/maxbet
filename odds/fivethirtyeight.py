@@ -9,9 +9,9 @@ import unidecode
 import csv
 
 MATCHES_URL = 'https://projects.fivethirtyeight.com/soccer-predictions/data.json'
-MATCHES_FILE = 'data/fivethirtyeight/data.json'
+MATCHES_FILE = 'cache/fivethirtyeight/data.json'
 MATCHES_CSV_URL = 'https://projects.fivethirtyeight.com/soccer-api/club/spi_matches.csv'
-MATCHES_CSV_FILE = 'data/fivethirtyeight/data.csv'
+MATCHES_CSV_FILE = 'cache/fivethirtyeight/data.csv'
 
 DATETIME = 'datetime'
 DATE = 'date'
@@ -29,8 +29,7 @@ LEAGUE_NAME = 'longName'
 LEAGUES = 'leagues'
 MATCHES = 'matches'
 
-DAYS_LOWER_BOUND = 0
-DAYS_UPPER_BOUND = 1
+FIVETHIRTYEIGHT = '538'
 
 
 def get_league_from_id(league_id, data):
@@ -41,21 +40,17 @@ def get_league_from_id(league_id, data):
 
 
 def create_matches(data):
-    now = datetime.datetime.utcnow()
-    lower_bound = (now + datetime.timedelta(days=DAYS_LOWER_BOUND)).replace(tzinfo=datetime.timezone.utc)
-    upper_bound = (now + datetime.timedelta(days=DAYS_UPPER_BOUND)).replace(tzinfo=datetime.timezone.utc)
     matches = []
     for match_data in data[MATCHES]:
         match_datetime = datetime.datetime.strptime(match_data[DATETIME], '%Y-%m-%dT%H:%M:%SZ')
         match_datetime = match_datetime.replace(tzinfo=datetime.timezone.utc)
-        if lower_bound <= match_datetime <= upper_bound:
-            match = Match(match_datetime, unidecode.unidecode(match_data[TEAM1]),
-                          unidecode.unidecode(match_data[TEAM2]))
-            match.teams['1'].prob = float(match_data[PROB1])
-            match.teams['N'].prob = float(match_data[PROBTIE])
-            match.teams['2'].prob = float(match_data[PROB2])
-            match.league = get_league_from_id(match_data[LEAGUE_ID], data)
-            matches.append(match)
+        match = Match(match_datetime, unidecode.unidecode(match_data[TEAM1]),
+                      unidecode.unidecode(match_data[TEAM2]))
+        match.teams['1'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB1])
+        match.teams['N'].probs[FIVETHIRTYEIGHT] = float(match_data[PROBTIE])
+        match.teams['2'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB2])
+        match.league = get_league_from_id(match_data[LEAGUE_ID], data)
+        matches.append(match)
     matches_by_league = {}
     for match in matches:
         if match.league not in matches_by_league:
@@ -86,3 +81,8 @@ def read_weekly_matches():
         data = json.load(file)
         matches = create_matches(data)
     return matches
+
+
+def get_matches():
+    matches = read_weekly_matches().values()
+    return [match for sublist in matches for match in sublist]

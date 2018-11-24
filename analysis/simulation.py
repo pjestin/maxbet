@@ -55,7 +55,7 @@ class Simulation:
         plt.show()
 
     @classmethod
-    def simulate_bets(cls, match_data, params):
+    def simulate_bets(cls, match_data, params, plot=False):
         print('Simulation parameters: {}'.format(params))
         bet_odd_power = params[3]
         money = [1.0]
@@ -75,7 +75,8 @@ class Simulation:
             return 0.0
         print('Money: {}'.format(money[-1]))
         print('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
-        cls.plot(money)
+        if plot:
+            cls.plot(money)
         return money[-1]
 
     @classmethod
