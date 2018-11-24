@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 DATE_FORMAT = '%Y-%m-%dT%H'
 BET_ODD_POWER = 0.
-RESOLUTION = 0.002
+RESOLUTION = 0.01
 
 
 def stats_on_day(match_data):
@@ -45,12 +45,7 @@ def stats_on_return(match_data):
             continue
         for side_id, side in match['sides'].items():
             for current_time in ValueBetSimulation.get_odd_times(side):
-                current_odds = {}
-                for website, odds in side['odds'].items():
-                    for odd_time, odd in odds:
-                        if datetime.datetime.strptime(odd_time, ValueBetSimulation.DATE_TIME_FORMAT) > current_time:
-                            break
-                        current_odds[website] = odd
+                current_odds = ValueBetSimulation.current_numbers(side['odds'], current_time)
                 best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds)
                 prob = ValueBetSimulation.get_prob(current_odds, margins)
                 rounded_return = float(int(best_odd * prob / RESOLUTION)) * RESOLUTION
@@ -58,8 +53,39 @@ def stats_on_return(match_data):
                 if rounded_return not in contrib_per_return:
                     contrib_per_return[rounded_return] = []
                 contrib_per_return[rounded_return].append(contrib)
-    x = []
-    y = []
+    x, y = [], []
+    for rounded_return, contribs in sorted(contrib_per_return.items()):
+        x.append(rounded_return)
+        y.append(sum(contribs))
+
+    plt.plot(x, y)
+    plt.title('Contribution per return')
+    plt.xlabel('Rounded return')
+    plt.ylabel('Contribution')
+    plt.show()
+
+
+def stats_on_probabilities(match_data):
+    contrib_per_return = {}
+    for summary, match in match_data.items():
+        result = ValueBetSimulation.get_result(match['sides'])
+        if not result:
+            continue
+        for side_id, side in match['sides'].items():
+            if 'probs' not in side or 'odds' not in side:
+                continue
+            for current_time in ValueBetSimulation.get_odd_times(side):
+                current_odds = ValueBetSimulation.current_numbers(side['odds'], current_time)
+                best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds)
+                current_probs = ValueBetSimulation.current_numbers(side['probs'], current_time)
+                if current_probs:
+                    prob = statistics.mean(current_probs.values())
+                    rounded_return = float(int(best_odd * prob / RESOLUTION)) * RESOLUTION
+                    contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER)
+                    if rounded_return not in contrib_per_return:
+                        contrib_per_return[rounded_return] = []
+                    contrib_per_return[rounded_return].append(contrib)
+    x, y = [], []
     for rounded_return, contribs in sorted(contrib_per_return.items()):
         x.append(rounded_return)
         y.append(sum(contribs))

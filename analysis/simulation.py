@@ -39,7 +39,6 @@ class Simulation:
     @classmethod
     def bet(cls, money, odd, success, bet_odd_power):
         new_money = money[-1] * (1 + cls.get_contribution(odd, success, bet_odd_power))
-        # print('Money: {}'.format(new_money))
         money.append(new_money)
 
     @classmethod
@@ -47,17 +46,21 @@ class Simulation:
         return None
 
     @classmethod
-    def plot(cls, money):
-        plt.plot(range(len(money)), [math.log(m) for m in money])
+    def plot(cls, contrib):
+        plt.plot(range(len(contrib)), contrib)
         plt.title('Simulation result')
         plt.xlabel('Number of bets')
         plt.ylabel('Money')
         plt.show()
 
     @classmethod
-    def simulate_bets(cls, match_data, params, plot=False):
+    def plot_log(cls, money):
+        cls.plot([math.log(m) for m in money])
+
+    @classmethod
+    def simulate_bets(cls, match_data, params):
         print('Simulation parameters: {}'.format(params))
-        bet_odd_power = params[3]
+        bet_odd_power = params[0]
         money = [1.0]
         for summary, match in match_data.items():
             result = cls.get_result(match['sides'])
@@ -67,23 +70,17 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd = condition
-                    # print('Betting on {} ({})'.format(summary, side_id))
                     cls.bet(money, odd, result == side_id, bet_odd_power)
-                    break
         print('Number of bets: {}'.format(len(money) - 1))
-        if len(money) == 1:
-            return 0.0
         print('Money: {}'.format(money[-1]))
         print('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
-        if plot:
-            cls.plot(money)
-        return money[-1]
+        return money
 
     @classmethod
     def simulate_contributions(cls, match_data, params):
         print('Simulation parameters: {}'.format(params))
-        contrib = []
-        bet_odd_power = params[3]
+        contrib = [0.]
+        bet_odd_power = params[0]
         for summary, match in match_data.items():
             result = cls.get_result(match['sides'])
             if not result:
@@ -92,29 +89,10 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd = condition
-                    # print('Contribution on {} ({})'.format(summary, side_id))
-                    contrib.append(cls.get_contribution(odd, result == side_id, bet_odd_power))
+                    contrib.append(contrib[-1] + cls.get_contribution(odd, result == side_id, bet_odd_power))
         print('Number of contributions: {}'.format(len(contrib)))
-        if not contrib:
-            return -1000.
-        # contrib_mean = statistics.mean(contrib)
-        # print('Mean: {}'.format(contrib_mean))
-        contrib_sum = sum(contrib)
-        print('Total: {}'.format(contrib_sum))
-        return contrib_sum
-
-    class Type(Enum):
-        VALUE_BET = 1.
-        TRADE = 2
-
-    @classmethod
-    def factory(cls, sim_type):
-        if sim_type == cls.Type.VALUE_BET:
-            return ValueBetSimulation()
-        elif sim_type == cls.Type.TRADE:
-            return TradeSimulation()
-        else:
-            return None
+        print('Total: {}'.format(contrib[-1]))
+        return contrib
 
 
 class ValueBetSimulation(Simulation):
@@ -123,6 +101,8 @@ class ValueBetSimulation(Simulation):
     def get_margins(cls, match_data):
         margins = {}
         for side in match_data['sides'].values():
+            if 'odds' not in side:
+                continue
             for website, odds in side['odds'].items():
                 if website not in margins:
                     margins[website] = 0.0
@@ -151,6 +131,8 @@ class ValueBetSimulation(Simulation):
     @classmethod
     def get_odd_times(cls, side):
         odd_times = []
+        if 'odds' not in side:
+            return odd_times
         for odds in side['odds'].values():
             for odd_time, odd in odds:
                 odd_datetime = datetime.datetime.strptime(odd_time, cls.DATE_TIME_FORMAT)
@@ -159,20 +141,45 @@ class ValueBetSimulation(Simulation):
         return sorted(odd_times)
 
     @classmethod
+    def current_numbers(cls, numbers, current_time):
+        current_number = {}
+        for website, website_numbers in numbers.items():
+            for time, number in website_numbers:
+                if datetime.datetime.strptime(time, cls.DATE_TIME_FORMAT) > current_time:
+                    break
+                current_number[website] = number
+        return current_number
+
+    @classmethod
     def condition_for_bet(cls, match, side, params):
         margins = cls.get_margins(match)
-        min_prob, min_return, return_span = params[:3]
+        if not margins:
+            return None
+        min_prob, min_return, max_return = params[1:]
         for current_time in cls.get_odd_times(side):
-            current_odds = {}
-            for website, odds in side['odds'].items():
-                for odd_time, odd in odds:
-                    if datetime.datetime.strptime(odd_time, cls.DATE_TIME_FORMAT) > current_time:
-                        break
-                    current_odds[website] = odd
+            current_odds = cls.current_numbers(side['odds'], current_time)
             best_website, best_odd = cls.get_best_odd(current_odds)
             prob = cls.get_prob(current_odds, margins)
-            if min_return < best_odd * prob < min_return + return_span and prob > min_prob:
+            if min_return < best_odd * prob < max_return and prob > min_prob:
                 return best_website, best_odd
+        return None
+
+
+class ProbabilitySimulation(ValueBetSimulation):
+
+    @classmethod
+    def condition_for_bet(cls, match, side, params):
+        if 'probs' not in side or 'odds' not in side:
+            return None
+        min_prob, min_return, max_return = params[1:]
+        for current_time in cls.get_odd_times(side):
+            current_odds = cls.current_numbers(side['odds'], current_time)
+            best_website, best_odd = cls.get_best_odd(current_odds)
+            current_probs = cls.current_numbers(side['probs'], current_time)
+            if current_probs:
+                prob = statistics.mean(current_probs.values())
+                if min_return < best_odd * prob < max_return and prob > min_prob:
+                    return best_website, best_odd
         return None
 
 
@@ -194,11 +201,13 @@ class TradeSimulation(Simulation):
     @classmethod
     def condition_for_bet(cls, match, side, params):
         bet_time = None
-        max_ratio_variation = params[0]
+        min_ratio_variation, max_ratio_variation = params[1:]
+        if 'odds' not in side:
+            return None
         for website, odds in side['odds'].items():
             max_odd = None
             for time, odd in odds:
-                if max_odd and (odd - max_odd) / max_odd < max_ratio_variation:
+                if max_odd and min_ratio_variation < (odd - max_odd) / max_odd < max_ratio_variation:
                     bet_time = time
                 if not max_odd or odd > max_odd:
                     max_odd = odd

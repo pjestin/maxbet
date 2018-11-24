@@ -70,6 +70,7 @@ def enrich_data(matches, data):
             if is_match(match, match_data):
                 this_match_data = match_data
                 this_summary = summary
+                break
         print('Updating match: {}'.format(this_summary))
         update_match_data(match, this_match_data)
         data[this_summary] = this_match_data
