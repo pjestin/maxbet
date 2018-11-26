@@ -5,10 +5,12 @@ from .simulation import Simulation, ValueBetSimulation
 import datetime
 import statistics
 import matplotlib.pyplot as plt
+import math
 
 DATE_FORMAT = '%Y-%m-%dT%H'
 BET_ODD_POWER = 0.
 RESOLUTION = 0.01
+PROB_POWER = 1.
 
 
 def stats_on_day(match_data):
@@ -48,7 +50,7 @@ def stats_on_return(match_data):
                 current_odds = ValueBetSimulation.current_numbers(side['odds'], current_time)
                 best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds)
                 prob = ValueBetSimulation.get_prob(current_odds, margins)
-                rounded_return = float(int(best_odd * prob / RESOLUTION)) * RESOLUTION
+                rounded_return = float(int(best_odd * math.pow(prob, PROB_POWER) / RESOLUTION)) * RESOLUTION
                 contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER)
                 if rounded_return not in contrib_per_return:
                     contrib_per_return[rounded_return] = []

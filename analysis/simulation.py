@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from enum import Enum
 import datetime
 import matplotlib.pyplot as plt
 import math
@@ -13,7 +12,7 @@ class Simulation:
     BET_FACTOR = 0.5
     BET_ODD_POWER = 2.0
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M'
-    WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Bwin', 'Betstars', 'Winamax']
+    WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax', 'Bwin', 'Betstars']
 
     @classmethod
     def get_result(cls, side_data):
@@ -56,6 +55,22 @@ class Simulation:
     @classmethod
     def plot_log(cls, money):
         cls.plot([math.log(m) for m in money])
+
+    @classmethod
+    def get_bet_matches(cls, match_data, params):
+        print('Getting bet matches...')
+        bet_matches = set()
+        now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+        for summary, match in match_data.items():
+            match_datetime = datetime.datetime.strptime(match['datetime'], '%Y-%m-%dT%H:%M%z')
+            if match_datetime < now:
+                continue
+            for side_id, side in match['sides'].items():
+                condition = cls.condition_for_bet(match, side, params)
+                if condition:
+                    website, odd = condition
+                    bet_matches.add((summary, side_id, website, odd, match_datetime))
+        return bet_matches
 
     @classmethod
     def simulate_bets(cls, match_data, params):

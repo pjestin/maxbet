@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import patch
 from analysis.simulation import ValueBetSimulation, TradeSimulation, ProbabilitySimulation
 import json
+from datetime import datetime, timezone, timedelta
 
 
 DATA_FOR_SIMULATION_FILE = 'test/analysis/data/data_for_simulation.json'
@@ -21,6 +23,15 @@ class SimulationTest(unittest.TestCase):
         contrib = ValueBetSimulation.simulate_contributions(self.match_data, params=[1., 0.1, 0.8, 5.])
         expected_contrib = [0.0, 0.33870967741935487, 0.11648745519713266, -0.06081750934187444]
         self.assertEqual(expected_contrib, contrib)
+
+    @patch('datetime.datetime')
+    def test_value_bet_get_bets(self, mocked_datetime):
+        mocked_datetime.utcnow.return_value = datetime(2018, 11, 7, 10, 43, tzinfo=timezone.utc)
+        mocked_datetime.strptime = datetime.strptime
+        matches = ValueBetSimulation.get_bet_matches(self.match_data, params=[1., 0.35, 0., 5.])
+        expected_matches = {('2018-11-10T04:00+0100 Atlas Guadalajara - Pachuca', '2', 'Bwin', 2.25,
+                             datetime(2018, 11, 10, 4, 0, tzinfo=timezone(timedelta(seconds=3600))))}
+        self.assertEqual(expected_matches, matches)
 
     def test_trade_money(self):
         money = TradeSimulation.simulate_bets(self.match_data, params=[1.2, -0.1, 0.])

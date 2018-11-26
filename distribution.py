@@ -12,28 +12,12 @@ SMTP_PORT = '587'
 PASSWORD = 'Z4tH,yHt'
 
 
-def get_matches_summary(matches_by_league):
+def get_matches_summary(bet_matches):
     print('Creating matches summary...')
     text = ''
-    count = 0
-    for league, matches in matches_by_league.items():
-        league_text = ''
-        sure_bet_matches = []
-        for match in matches:
-            for team in match.teams.values():
-                website, odd = team.get_best_odd()
-                if website:
-                    league_text += '{}; {}; {} ({})\n'.format(match, team, odd, website)
-                    count += 1
-            if match.sure_bet:
-                sure_bet_matches.append(match)
-        if league_text:
-            text += '\n{}\n{}'.format(league, league_text)
-    text += '\nTotal number of matches: {}\n'.format(count)
-    if sure_bet_matches:
-        text += '\nSure bets\n'
-        for match in sure_bet_matches:
-            text += '{}\n'.format(match)
+    for summary, side_id, website, odd, match_datetime in sorted(bet_matches, key=lambda x: x[4]):
+        text += '{} ({}; {}; {})\n'.format(summary, side_id, odd, website)
+    text += 'Number of bet matches: {}\n'.format(len(bet_matches))
     return text
 
 
