@@ -89,3 +89,13 @@ def enrich(matches):
 def get_match_data():
     with open(DATA_FILE) as file:
         return json.load(file, object_pairs_hook=OrderedDict)
+
+
+def get_finished_match_data():
+    match_data = get_match_data()
+    finished_match_data = {}
+    for summary, match in match_data.items():
+        if SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]\
+                and SCORE in match[SIDES][SIDE_1] and SCORE in match[SIDES][SIDE_2]:
+            finished_match_data[summary] = match
+    return finished_match_data

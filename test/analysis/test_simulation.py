@@ -16,12 +16,12 @@ class SimulationTest(unittest.TestCase):
 
     def test_value_bet_money(self):
         money = ValueBetSimulation.simulate_bets(self.match_data, params=[1., 0.1, 0.8, 5.])
-        expected_money = [1.0, 1.338709677419355, 1.0412186379928317, 0.8566054043061594]
+        expected_money = [1.0, 1.3360655737704918, 1.0179547228727557, 0.8374662968314869]
         self.assertEqual(expected_money, money)
 
     def test_value_bet_contribution(self):
         contrib = ValueBetSimulation.simulate_contributions(self.match_data, params=[1., 0.1, 0.8, 5.])
-        expected_contrib = [0.0, 0.33870967741935487, 0.11648745519713266, -0.06081750934187444]
+        expected_contrib = [0.0, 0.3360655737704918, 0.0979703356752537, -0.07933462886375339]
         self.assertEqual(expected_contrib, contrib)
 
     @patch('datetime.datetime')
@@ -29,7 +29,7 @@ class SimulationTest(unittest.TestCase):
         mocked_datetime.utcnow.return_value = datetime(2018, 11, 7, 10, 43, tzinfo=timezone.utc)
         mocked_datetime.strptime = datetime.strptime
         matches = ValueBetSimulation.get_bet_matches(self.match_data, params=[1., 0.35, 0., 5.])
-        expected_matches = {('2018-11-10T04:00+0100 Atlas Guadalajara - Pachuca', '2', 'Bwin', 2.25,
+        expected_matches = {('2018-11-10T04:00+0100 Atlas Guadalajara - Pachuca', '2', 'ParionsWeb', 2.1,
                              datetime(2018, 11, 10, 4, 0, tzinfo=timezone(timedelta(seconds=3600))))}
         self.assertEqual(expected_matches, matches)
 
@@ -45,10 +45,10 @@ class SimulationTest(unittest.TestCase):
 
     def test_probability_money(self):
         money = ProbabilitySimulation.simulate_bets(self.match_data, params=[1., 0.1, 0.8, 5.])
-        expected_money = [1.0, 1.338709677419355, 1.0412186379928317]
+        expected_money = [1.0, 1.3360655737704918, 1.0179547228727557]
         self.assertEqual(expected_money, money)
 
     def test_probability_contribution(self):
         contrib = ProbabilitySimulation.simulate_contributions(self.match_data, params=[1., 0.1, 0.8, 5.])
-        expected_contrib = [0.0, 0.33870967741935487, 0.11648745519713266]
+        expected_contrib = [0.0, 0.3360655737704918, 0.0979703356752537]
         self.assertEqual(expected_contrib, contrib)

@@ -12,7 +12,7 @@ class Simulation:
     BET_FACTOR = 0.5
     BET_ODD_POWER = 2.0
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M'
-    WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax', 'Bwin', 'Betstars']
+    WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
 
     @classmethod
     def get_result(cls, side_data):

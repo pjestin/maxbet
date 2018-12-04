@@ -23,11 +23,11 @@ def register_matches():
 
 
 def print_analysis():
-    match_data = db.get_match_data()
+    match_data = db.get_finished_match_data()
     # stats.stats_on_return(match_data)
     # stats.stats_on_probabilities(match_data)
-    Simulation.plot_log(ValueBetSimulation.simulate_bets(match_data, params=[0.5, 0.26, 0.98, 5.]))
-    # Simulation.plot(ValueBetSimulation.simulate_contributions(match_data, params=[0., 0., 1.03, 1.1]))
+    Simulation.plot_log(ValueBetSimulation.simulate_bets(match_data, params=[1., 0.26, 0.96, 5.]))
+    # Simulation.plot(ValueBetSimulation.simulate_contributions(match_data, params=[1., 0., 0.96, 5.]))
     # Simulation.plot_log(ProbabilitySimulation.simulate_bets(match_data, params=[1.2, 0.2, 0.96, 5.]))
     # Simulation.plot_log(TradeSimulation.simulate_bets(match_data, params=[1.2, -0.06, -0.047]))
 
@@ -46,9 +46,8 @@ def find_best_parameters():
 
 
 def print_interesting_matches(send_mail=False):
-    match_data = db.get_match_data()
-    bet_matches = ValueBetSimulation.get_bet_matches(match_data, params=[0.5, 0., 1.03, 5.])
-    bet_matches.update(ValueBetSimulation.get_bet_matches(match_data, params=[0.5, 0.25, 0.98, 5.]))
+    bet_matches = cotes.get_value_bets(params=[1., 0., 1.03, 5.])
+    bet_matches.update(cotes.get_value_bets(params=[1., 0.26, 0.96, 5.]))
     matches_summary = distribution.get_matches_summary(bet_matches)
     print('Matches summary:\n{}'.format(matches_summary))
     if send_mail:
