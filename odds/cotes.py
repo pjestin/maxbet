@@ -79,6 +79,13 @@ def get_matches_with_odds_for_league(league_id):
     return get_matches_with_odds_from_file(file_path)
 
 
+def get_matches_with_odds():
+    matches = []
+    for league_id in LEAGUE_URLS:
+        matches.extend(get_matches_with_odds_for_league(league_id))
+    return matches
+
+
 def enrich_matches(matches_by_league):
     for league, matches in matches_by_league.items():
         matches_with_odds = get_matches_with_odds_for_league(league)
@@ -111,33 +118,25 @@ def enrich_matches(matches_by_league):
 def get_value_bets(params):
     bet_odd_power, min_prob, min_return, max_return = params
     bet_matches = set()
-    for league_id, _ in LEAGUE_URLS.items():
-        matches = get_matches_with_odds_for_league(league_id)
-        for match in matches:
-            margins = {}
-            for site in match.teams['1'].odds.keys():
-                margins[site] = 0.0
-                for team in match.teams.values():
-                    margins[site] += 1 / team.odds[site]
-            for side_id, side in match.teams.items():
-                prob = 0.0
-                for site in margins.keys():
-                    prob += 1 / side.odds[site] / margins[site]
-                prob /= len(margins)
-                best_website, best_odd = None, 0.0
-                for website, odd in side.odds.items():
-                    if (not WEBSITES or website in WEBSITES) and odd > best_odd:
-                        best_odd, best_website = odd, website
-                if not best_odd:
-                    continue
-                bet_fraction = BET_FACTOR / math.pow(best_odd, bet_odd_power)
-                if prob > min_prob and min_return < prob * best_odd < max_return:
-                    bet_matches.add((str(match), side_id, best_website, best_odd, match.datetime, bet_fraction))
+    matches = get_matches_with_odds()
+    for match in matches:
+        margins = {}
+        for site in match.teams['1'].odds.keys():
+            margins[site] = 0.0
+            for team in match.teams.values():
+                margins[site] += 1 / team.odds[site]
+        for side_id, side in match.teams.items():
+            prob = 0.0
+            for site in margins.keys():
+                prob += 1 / side.odds[site] / margins[site]
+            prob /= len(margins)
+            best_website, best_odd = None, 0.0
+            for website, odd in side.odds.items():
+                if (not WEBSITES or website in WEBSITES) and odd > best_odd:
+                    best_odd, best_website = odd, website
+            if not best_odd:
+                continue
+            bet_fraction = BET_FACTOR / math.pow(best_odd, bet_odd_power)
+            if prob > min_prob and min_return < prob * best_odd < max_return:
+                bet_matches.add((str(match), side_id, best_website, best_odd, match.datetime, bet_fraction))
     return bet_matches
-
-
-def get_matches_with_odds():
-    matches = []
-    for league_id in LEAGUE_URLS:
-        matches.extend(get_matches_with_odds_for_league(league_id))
-    return matches

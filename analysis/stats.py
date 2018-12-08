@@ -9,7 +9,7 @@ import math
 
 DATE_FORMAT = '%Y-%m-%dT%H'
 BET_ODD_POWER = 0.
-RESOLUTION = 0.01
+RESOLUTION = 0.001
 PROB_POWER = 1.
 
 
