@@ -6,8 +6,8 @@ import datetime
 from difflib import SequenceMatcher
 from collections import OrderedDict
 
-DATA_FILE = 'data/analysis/data.json'
-BACKUP_DATA_FILE = 'data/analysis/data.bak.json'
+DATA_FILE = 'analysis/data/db.json'
+BACKUP_DATA_FILE = 'analysis/data/db.bak.json'
 DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
 TIMEZONE = 'Europe/Paris'
 
