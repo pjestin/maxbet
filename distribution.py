@@ -9,7 +9,6 @@ EMAIL_TO = 'jestin_17@hotmail.com'
 SUBJECT = '[Bet] Interesting matches of this week'
 SMTP_ADDRESS = 'smtp-mail.outlook.com'
 SMTP_PORT = '587'
-PASSWORD = 'Z4tH,yHt'
 
 
 def get_matches_summary(bet_matches):
