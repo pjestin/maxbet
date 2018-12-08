@@ -7,6 +7,7 @@ from model import Match, League
 import datetime
 import unidecode
 import csv
+from collections import OrderedDict
 
 MATCHES_URL = 'https://projects.fivethirtyeight.com/soccer-predictions/data.json'
 MATCHES_FILE = 'cache/fivethirtyeight/data.json'
@@ -51,7 +52,7 @@ def create_matches(data):
         match.teams['2'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB2])
         match.league = get_league_from_id(match_data[LEAGUE_ID], data)
         matches.append(match)
-    matches_by_league = {}
+    matches_by_league = OrderedDict()
     for match in matches:
         if match.league not in matches_by_league:
             matches_by_league[match.league] = []

@@ -3,6 +3,7 @@ from unittest.mock import patch
 from analysis.simulation import ValueBetSimulation, TradeSimulation, ProbabilitySimulation
 import json
 from datetime import datetime, timezone, timedelta
+from collections import OrderedDict
 
 
 DATA_FOR_SIMULATION_FILE = 'test/analysis/data/data_for_simulation.json'
@@ -12,7 +13,7 @@ class SimulationTest(unittest.TestCase):
 
     def setUp(self):
         with open(DATA_FOR_SIMULATION_FILE, mode='r', encoding='latin-1') as file:
-            self.match_data = json.load(file)
+            self.match_data = json.load(file, object_pairs_hook=OrderedDict)
 
     def test_value_bet_money(self):
         money = ValueBetSimulation.simulate_bets(self.match_data, params=[1., 0.1, 0.8, 5.])
