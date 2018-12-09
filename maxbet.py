@@ -45,20 +45,16 @@ def find_best_parameters():
         raise ValueError(result.message)
 
 
-def print_interesting_matches(send_mail=False):
+def print_interesting_matches():
     bet_matches = cotes.get_value_bets(params=[1., 0., 1.04, 5.])
     bet_matches.update(cotes.get_value_bets(params=[1., 0.26, 0.954, 5.]))
     matches_summary = distribution.get_matches_summary(bet_matches)
     print('Matches summary:\n{}'.format(matches_summary))
-    if send_mail:
-        distribution.send_email(matches_summary)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Analysis on football matches')
     parser.add_argument('action', help='Specify script action')
-    parser.add_argument('--email', dest='send_mail', action='store_true', default=False,
-                        help='Send an email with the matches summary')
     args = parser.parse_args()
     if args.action == REGISTER:
         register_matches()
@@ -67,7 +63,7 @@ def main():
     elif args.action == OPTIMISE:
         find_best_parameters()
     elif args.action == BET:
-        print_interesting_matches(args.send_mail)
+        print_interesting_matches()
 
 
 if __name__ == '__main__':
