@@ -1,7 +1,7 @@
 import unittest
 from odds import scibet
 from datetime import datetime, timezone
-from model import Match
+from common.model import Match
 
 DATA_PATH = 'test/odds/data/scibet.html'
 TEAM_1_NAME = 'Moreirense FC'

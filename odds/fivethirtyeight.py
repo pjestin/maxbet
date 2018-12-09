@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-import download
+from common import download
 import json
-from model import Match, League
+from common.model import Match, League
 import datetime
 import unidecode
 import csv

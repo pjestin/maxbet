@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-import download
+from common import download
 from bs4 import BeautifulSoup
-from model import Match
+from common.model import Match
 import datetime
 import re
 import unidecode

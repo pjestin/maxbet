@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-import distribution
+from common import distribution
 from odds import cotes, scibet, fivethirtyeight
-from analysis import db, stats
-from analysis.simulation import Simulation, ValueBetSimulation, ProbabilitySimulation, TradeSimulation
+from analysis import db
+from analysis.simulation import Simulation, ValueBetSimulation
 import scipy.optimize as optimize
 import argparse
 

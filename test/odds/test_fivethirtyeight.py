@@ -1,7 +1,7 @@
 import unittest
 from odds import fivethirtyeight
 import json
-from model import Match
+from common.model import Match
 from datetime import datetime, timezone
 from collections import OrderedDict
 

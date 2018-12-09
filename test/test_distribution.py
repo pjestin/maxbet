@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timezone, timedelta
-import distribution
+from common import distribution
 
 
 class DistributionTest(unittest.TestCase):

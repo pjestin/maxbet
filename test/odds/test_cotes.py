@@ -1,7 +1,7 @@
 import unittest
 from odds import cotes
 from datetime import datetime, timezone, timedelta
-from model import Match
+from common.model import Match
 from unittest.mock import patch
 
 DATA_PATH = 'test/odds/data/cotes.html'

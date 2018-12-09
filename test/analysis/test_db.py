@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 from analysis import db
-from model import Match
+from common.model import Match
 from datetime import datetime, timezone, timedelta
 import json
 
