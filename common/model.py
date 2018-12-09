@@ -42,13 +42,6 @@ class Team:
         self.score = None
         self.odds = {}
 
-    def get_sub_odds(self):
-        sub_odds = {}
-        for site, odd in self.odds.items():
-            if site in WEBSITES:
-                sub_odds[site] = odd
-        return sub_odds
-
     def __str__(self):
         return self.name
 
