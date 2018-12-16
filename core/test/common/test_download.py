@@ -10,13 +10,16 @@ TEST_URL = 'https://www.google.ie/'
 
 class DownloadTest(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def clean(cls):
         if os.path.isfile(TEST_FILE_PATH):
             os.remove(TEST_FILE_PATH)
 
+    def setUp(self):
+        self.clean()
+
     def tearDown(self):
-        if os.path.isfile(TEST_FILE_PATH):
-            os.remove(TEST_FILE_PATH)
+        self.clean()
 
     def test_download_data(self):
         self.assertFalse(os.path.isfile(TEST_FILE_PATH))

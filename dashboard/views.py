@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 
+from .models import BetMatch, RefreshTime
+
 from core.odds import cotes
-from core.common import distribution
 
 
 def index(request):
@@ -26,7 +27,22 @@ def search(request):
 
 
 def bet(request):
-    bet_matches = cotes.get_value_bets(params=[1., 0.26, 0.954, 5.])
-    # matches_summary = distribution.get_matches_summary(bet_matches)
-    context = {'matches': sorted(bet_matches, key=lambda x: x[4])}
+    bet_matches = sorted(BetMatch.objects.all(), key=lambda x: x.summary)
+    if RefreshTime.objects.exists():
+        refresh_time = RefreshTime.objects.all()[0].refresh_datetime
+    else:
+        refresh_time = 'Never'
+    context = {'bet_matches': bet_matches, 'refresh_time': refresh_time}
     return render(request, 'dashboard/bet.html', context)
+
+
+def bet_refresh(request):
+    BetMatch.objects.all().delete()
+    bet_matches = cotes.get_value_bets(params=[1., 0.26, 0.954, 5.])
+    for summary, side_id, website, odd, match_datetime, bet_fraction in bet_matches:
+        bet_match = BetMatch(summary=summary, side=side_id, website=website, odd=odd,
+                             bet_fraction=bet_fraction, match_datetime=match_datetime)
+        bet_match.save()
+    RefreshTime.objects.filter(type='bet').delete()
+    RefreshTime(type='bet').save()
+    return redirect('dashboard:bet')

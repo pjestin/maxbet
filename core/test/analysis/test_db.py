@@ -23,9 +23,7 @@ class DbTest(unittest.TestCase):
         self.odd_1 = 1.53
         self.odd_2 = 2.67
         self.time = datetime(2018, 8, 15, 11, 57, tzinfo=timezone.utc)
-        time_string = '2018-08-15T11:57+0000'
         self.now = datetime.utcnow().strftime(db.DATE_TIME_FORMAT)
-        summary = '{} {} - {}'.format(time_string, self.team_1_name, self.team_2_name)
         with open(DATA_AFTER_REGISTER_FILE, mode='r', encoding='latin-1') as file:
             self.data_after_register = json.load(file)
         with open(DATA_BEFORE_ENRICH_FILE, mode='r', encoding='latin-1') as file:

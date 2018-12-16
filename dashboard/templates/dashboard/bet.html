@@ -8,100 +8,39 @@
     </div>
     <!-- /.col-lg-12 -->
 </div>
-<!-- /.row -->
+
 <div class="row">
-    <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Area Chart Example
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <div id="morris-area-chart"></div>
-            </div>
-            <!-- /.panel-body -->
-        </div>
-        <!-- /.panel -->
-    </div>
-    <!-- /.col-lg-6 -->
-    <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Bar Chart Example
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <div id="morris-bar-chart"></div>
-            </div>
-            <!-- /.panel-body -->
-        </div>
-        <!-- /.panel -->
-    </div>
-    <!-- /.col-lg-6 -->
-    <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Line Chart Example
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <div id="morris-line-chart"></div>
-            </div>
-            <!-- /.panel-body -->
-        </div>
-        <!-- /.panel -->
-    </div>
-    <!-- /.col-lg-6 -->
-    <div class="col-lg-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Donut Chart Example
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <div id="morris-donut-chart"></div>
-            </div>
-            <!-- /.panel-body -->
-        </div>
-        <!-- /.panel -->
-    </div>
-    <!-- /.col-lg-6 -->
     <div class="col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Morris.js Usage
-            </div>
-            <!-- /.panel-heading -->
-            <div class="panel-body">
-                <p>Morris.js is a jQuery based charting plugin created by Olly Smith. In SB Admin, we are using the most recent version of Morris.js which includes the resize function, which makes the charts fully responsive. The documentation for Morris.js is available on their website, <a target="_blank" href="http://morrisjs.github.io/morris.js/">http://morrisjs.github.io/morris.js/</a>.</p>
-                <a target="_blank" class="btn btn-default btn-lg btn-block" href="http://morrisjs.github.io/morris.js/">View Morris.js Documentation</a>
-            </div>
-            <!-- /.panel-body -->
-        </div>
-        <!-- /.panel -->
+        <a href="{% url 'dashboard:bet-refresh' %}"><i class="fa fa-refresh fa-fw"></i> Refresh</a>
+        <br/>
+        <em>Last refreshed: {{ refresh_time }}</em>
+        <hr/>
     </div>
-    <!-- /.col-lg-6 -->
 </div>
 
-    <div class="row">
-{% for summary, side_id, website, odd, match_datetime, bet_fraction in matches %}
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <b>{{ summary }}</b>
-                </div>
-                <!-- /.panel-heading -->
-                <div class="panel-body">
-                    <p>Side: {{ side_id }}</p>
-                    <p>Website: {{ website }}</p>
-                    <p>Odd: {{ odd }}</p>
-                    <p>Bet fraction: {{ bet_fraction }}</p>
-                </div>
-                <!-- /.panel-body -->
-            </div>
-            <!-- /.panel -->
-    </div>
+<div class="row">
+    <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+        <thead>
+            <tr>
+                <th>Match</th>
+                <th>Side</th>
+                <th>Website</th>
+                <th>Odd</th>
+                <th>Bet fraction</th>
+            </tr>
+        </thead>
+        <tbody>
+{% for bet_match in bet_matches %}
+            <tr class="odd gradeX">
+                <td>{{ bet_match.summary }}</td>
+                <td>{{ bet_match.side }}</td>
+                <td>{{ bet_match.website }}</td>
+                <td class="center">{{ bet_match.odd }}</td>
+                <td class="center">{{ bet_match.bet_fraction }}</td>
+            </tr>
 {% endfor %}
-        </div>
+        </tbody>
+    </table>
+</div>
 
 {% endblock %}

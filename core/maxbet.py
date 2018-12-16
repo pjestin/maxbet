@@ -4,7 +4,7 @@
 from common import distribution
 from odds import cotes, scibet, fivethirtyeight
 from analysis import db
-from analysis.simulation import Simulation, ValueBetSimulation
+from analysis.simulation import Simulation, ValueBetSimulation, ProbabilitySimulation, TradeSimulation
 import scipy.optimize as optimize
 import argparse
 
@@ -26,10 +26,15 @@ def print_analysis():
     match_data = db.get_finished_match_data()
     # stats.stats_on_return(match_data)
     # stats.stats_on_probabilities(match_data)
-    # Simulation.plot_log(ValueBetSimulation.simulate_bets(match_data, params=[1., 0.26, 0.954, 5.]))
-    Simulation.plot(ValueBetSimulation.simulate_contributions(match_data, params=[1., 0.26, 0.954, 5.]))
-    # Simulation.plot_log(ProbabilitySimulation.simulate_bets(match_data, params=[1., 0.26, 0.96, 5.]))
-    # Simulation.plot_log(TradeSimulation.simulate_bets(match_data, params=[1.2, -1., -0.2]))
+
+    params = {Simulation.BET_ODD_POWER: 0., Simulation.BET_RETURN_POWER: 3., Simulation.MIN_PROB: 0.,
+              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 1.2}
+    # distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
+    # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
+    distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
+
+    # params = {Simulation.BET_ODD_POWER: 1., Simulation.MIN_RATIO_VARIATION: -1., Simulation.MAX_RATIO_VARIATION: -0.3}
+    # distribution.plot_log(TradeSimulation.simulate_bets(match_data, params))
 
 
 def find_best_parameters():
