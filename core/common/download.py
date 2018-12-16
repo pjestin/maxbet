@@ -6,7 +6,7 @@ import datetime
 import urllib.request
 
 
-MAX_FILE_AGE_MINUTES = 60
+MAX_FILE_AGE_MINUTES = 10
 
 
 def download_data(url, file_path):

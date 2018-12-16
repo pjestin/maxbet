@@ -15,7 +15,8 @@ def register(request):
 
 
 def analyse(request):
-    return render(request, 'dashboard/analyse.html')
+    context = {'area_chart_data': [{'x': 1, 'y': 2}]}
+    return render(request, 'dashboard/analyse.html', context)
 
 
 def optimise(request):
@@ -38,7 +39,7 @@ def bet(request):
 
 def bet_refresh(request):
     BetMatch.objects.all().delete()
-    bet_matches = cotes.get_value_bets(params=[1., 0.26, 0.954, 5.])
+    bet_matches = cotes.get_value_bets(params=[1., 0., 1.02, 1.08])
     for summary, side_id, website, odd, match_datetime, bet_fraction in bet_matches:
         bet_match = BetMatch(summary=summary, side=side_id, website=website, odd=odd,
                              bet_fraction=bet_fraction, match_datetime=match_datetime)

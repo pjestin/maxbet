@@ -3,7 +3,7 @@
 
 from common import distribution
 from odds import cotes, scibet, fivethirtyeight
-from analysis import db
+from analysis import db, stats
 from analysis.simulation import Simulation, ValueBetSimulation, ProbabilitySimulation, TradeSimulation
 import scipy.optimize as optimize
 import argparse
@@ -25,13 +25,14 @@ def register_matches():
 def print_analysis():
     match_data = db.get_finished_match_data()
     # stats.stats_on_return(match_data)
+    # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 0., Simulation.BET_RETURN_POWER: 3., Simulation.MIN_PROB: 0.,
-              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 1.2}
-    # distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
+    params = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.,
+              Simulation.MIN_RETURN: 1.02, Simulation.MAX_RETURN: 1.08}
+    distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
-    distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
+    # distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
 
     # params = {Simulation.BET_ODD_POWER: 1., Simulation.MIN_RATIO_VARIATION: -1., Simulation.MAX_RATIO_VARIATION: -0.3}
     # distribution.plot_log(TradeSimulation.simulate_bets(match_data, params))
@@ -52,7 +53,7 @@ def find_best_parameters():
 
 def print_interesting_matches():
     # bet_matches = cotes.get_value_bets(params=[1., 0., 1.04, 5.])
-    bet_matches = cotes.get_value_bets(params=[1., 0.26, 0.954, 5.])
+    bet_matches = cotes.get_value_bets(params=[1., 0., 1.02, 1.08])
     matches_summary = distribution.get_matches_summary(bet_matches)
     print('Matches summary:\n{}'.format(matches_summary))
 

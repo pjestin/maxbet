@@ -9,7 +9,7 @@ import math
 
 DATE_FORMAT = '%Y-%m-%dT%H'
 BET_ODD_POWER = 0.
-RESOLUTION = 0.001
+RESOLUTION = 0.05
 PROB_POWER = 1.
 
 
@@ -38,7 +38,7 @@ def stats_on_day(match_data):
     print('Average time for loses: {}'.format(day_lose / count_lose))
 
 
-def stats_on_return(match_data):
+def get_contrib_per_return(match_data):
     contrib_per_return = {}
     for summary, match in match_data.items():
         margins = ValueBetSimulation.get_margins(match)
@@ -51,14 +51,36 @@ def stats_on_return(match_data):
                 best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds)
                 prob = ValueBetSimulation.get_prob(current_odds, margins)
                 rounded_return = float(int(best_odd * math.pow(prob, PROB_POWER) / RESOLUTION)) * RESOLUTION
-                contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER)
+                if rounded_return > 1.1:
+                    print('High return: {}'.format(rounded_return))
+                contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER, prob, 0.)
                 if rounded_return not in contrib_per_return:
                     contrib_per_return[rounded_return] = []
                 contrib_per_return[rounded_return].append(contrib)
+    return contrib_per_return
+
+
+def stats_on_return(match_data):
+    contrib_per_return = get_contrib_per_return(match_data)
     x, y = [], []
     for rounded_return, contribs in sorted(contrib_per_return.items()):
         x.append(rounded_return)
         y.append(sum(contribs))
+
+    plt.plot(x, y)
+    plt.plot(x, [0 for _ in y])
+    plt.title('Contribution per return')
+    plt.xlabel('Rounded return')
+    plt.ylabel('Contribution')
+    plt.show()
+
+
+def stats_on_return_integral(match_data):
+    contrib_per_return = get_contrib_per_return(match_data)
+    x, y = [0.], [0.]
+    for rounded_return, contribs in sorted(contrib_per_return.items()):
+        x.append(rounded_return)
+        y.append(y[-1] + sum(contribs))
 
     plt.plot(x, y)
     plt.title('Contribution per return')
@@ -68,7 +90,7 @@ def stats_on_return(match_data):
 
 
 def stats_on_probabilities(match_data):
-    contrib_per_return = {}
+    contrib_per_prob = {}
     for summary, match in match_data.items():
         result = ValueBetSimulation.get_result(match['sides'])
         if not result:
@@ -82,18 +104,18 @@ def stats_on_probabilities(match_data):
                 current_probs = ValueBetSimulation.current_numbers(side['probs'], current_time)
                 if current_probs:
                     prob = statistics.mean(current_probs.values())
-                    rounded_return = float(int(best_odd * prob / RESOLUTION)) * RESOLUTION
-                    contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER)
-                    if rounded_return not in contrib_per_return:
-                        contrib_per_return[rounded_return] = []
-                    contrib_per_return[rounded_return].append(contrib)
+                    rounded_prob = float(int(prob / RESOLUTION)) * RESOLUTION
+                    contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER, prob, 0.)
+                    if rounded_prob not in contrib_per_prob:
+                        contrib_per_prob[rounded_prob] = []
+                        contrib_per_prob[rounded_prob].append(contrib)
     x, y = [], []
-    for rounded_return, contribs in sorted(contrib_per_return.items()):
-        x.append(rounded_return)
+    for rounded_prob, contribs in sorted(contrib_per_prob.items()):
+        x.append(rounded_prob)
         y.append(sum(contribs))
 
     plt.plot(x, y)
-    plt.title('Contribution per return')
-    plt.xlabel('Rounded return')
+    plt.title('Contribution per probability')
+    plt.xlabel('Rounded probability')
     plt.ylabel('Contribution')
     plt.show()
