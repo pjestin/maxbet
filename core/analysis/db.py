@@ -37,6 +37,8 @@ def is_match(match, match_data):
 def register_numbers_at_time(team_numbers, team_data_numbers):
     now = datetime.datetime.utcnow().strftime(DATE_TIME_FORMAT)
     for site, odd in team_numbers.items():
+        if not odd:
+            continue
         if site not in team_data_numbers:
             team_data_numbers[site] = []
         if not team_data_numbers[site] or \
