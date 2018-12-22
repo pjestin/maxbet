@@ -6,69 +6,74 @@ from core.common.model import Match
 from bs4 import BeautifulSoup
 import locale
 from datetime import datetime, timezone
-import re
+import urllib.request
 
 
 ODDSCHECKER_URL = 'https://www.oddschecker.com'
 URL_ROOT = ODDSCHECKER_URL + '/football/{}'
-FILE_PATH_ROOT = 'core/cache/oddschecker/league-{}.html'
-FILE_PATH_PER_MATCH_ROOT = 'core/cache/oddschecker/{}.html'
-LEAGUE_URLS = {2411: 'english/premier-league'}
 
 
-def get_matches_with_odds_from_file(file_path):
-    locale.setlocale(locale.LC_ALL, 'en_GB')
+def decode_match(match_url, home_team_name, away_team_name):
+    match_page = download.get_page(match_url)
+    match_soup = BeautifulSoup(match_page, 'html.parser')
+
+    bet_table = match_soup.find('table', {'class': 'eventTable'})
+    if not bet_table:
+        return None
+    datetime_string = bet_table['data-time']
+    match_datetime = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+    match = Match(match_datetime, home_team_name, away_team_name)
+
+    websites = []
+    name_to_side_id_map = {home_team_name: '1', 'Draw': 'N', away_team_name: '2'}
+    header = bet_table.find('tr', {'class': 'eventTableHeader'})
+    for website_anchor in header.find_all('a', {'data-bk': True}):
+        websites.append(website_anchor['title'])
+
+    for side in bet_table.find_all('tr', {'class': 'diff-row evTabRow bc'}):
+        side_name = side['data-bname']
+        if side_name not in name_to_side_id_map:
+            continue
+        side_id = name_to_side_id_map[side_name]
+        odd_list = []
+        for odd_tag in side.find_all('td', {'data-odig': True}):
+            odd_list.append(float(odd_tag['data-odig']))
+        match.teams[side_id].odds = dict(zip(websites, odd_list))
+
+    print('Decoded match: {}'.format(match))
+    return match
+
+
+def get_matches_with_odds_from_url(league_url):
+    print('Processing league {}'.format(league_url))
+    league_page = download.get_page(league_url)
     matches = []
-    with open(file_path, encoding='latin_1', newline='') as file:
-        soup = BeautifulSoup(file, 'html.parser')
-        for anchor in soup.find_all('a', {'class': 'beta-callout full-height-link whole-row-link', 'href': True}):
-            url = ODDSCHECKER_URL + anchor['href']
-            match_url = anchor['href'].split('/')[-2]
-            match_file_path = FILE_PATH_PER_MATCH_ROOT.format(match_url)
-            download.download_data(url, match_file_path)
-            with open(match_file_path, encoding='latin_1', newline='') as match_file:
-                match_soup = BeautifulSoup(match_file, 'html.parser')
-
-                bet_table = match_soup.find('table', {'class': 'eventTable'})
-                datetime_string = bet_table['data-time']
-                match_datetime = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
-
-                title = match_soup.find('h1', {'class': 'beta-h2'}).string
-                title_match = re.match('(.*) v (.*) Winner Betting Odds', title)
-                name_to_side_id_map = {title_match.group(1): '1', 'Draw': 'N', title_match.group(2): '2'}
-                match = Match(match_datetime, title_match.group(1), title_match.group(2))
-
-                websites = []
-                header = bet_table.find('tr', {'class': 'eventTableHeader'})
-                for website_anchor in header.find_all('a', {'data-bk': True}):
-                    websites.append(website_anchor['title'])
-
-                for side in bet_table.find_all('tr', {'class': 'diff-row evTabRow bc'}):
-                    side_name = side['data-bname']
-                    side_id = name_to_side_id_map[side_name]
-                    odd_list = []
-                    for odd_tag in side.find_all('td', {'data-odig': True}):
-                        odd_list.append(float(odd_tag['data-odig']))
-                    match.teams[side_id].odds = dict(zip(websites, odd_list))
-
-                matches.append(match)
-
+    soup = BeautifulSoup(league_page, 'html.parser')
+    for row in soup.find_all('tr', {'class': 'match-on'}):
+        team_paragraphs = row.find_all('p', {'class': 'fixtures-bet-name beta-footnote'})
+        if len(team_paragraphs) != 2:
+            continue
+        home_team_name = team_paragraphs[0].contents[0]
+        away_team_name = team_paragraphs[1].contents[0]
+        anchor = row.find('a', {'class': 'beta-callout full-height-link whole-row-link', 'href': True})
+        match_url = ODDSCHECKER_URL + anchor['href']
+        match = decode_match(match_url, home_team_name, away_team_name)
+        if match:
+            matches.append(match)
     return matches
 
 
-def get_matches_with_odds_for_league(league_id):
-    print('Processing league {}'.format(league_id))
-    if league_id not in LEAGUE_URLS:
-        print('Unrecognized league: {}'.format(league_id))
-        return
-    url = URL_ROOT.format(LEAGUE_URLS[league_id])
-    file_path = FILE_PATH_ROOT.format(league_id)
-    download.download_data(url, file_path)
-    return get_matches_with_odds_from_file(file_path)
-
-
 def get_matches_with_odds():
+    locale.setlocale(locale.LC_ALL, 'en_GB')
     matches = []
-    for league_id in LEAGUE_URLS:
-        matches.extend(get_matches_with_odds_for_league(league_id))
+    page = download.get_page(URL_ROOT.format('leagues-cups'))
+    soup = BeautifulSoup(page, 'html.parser')
+    league_urls = set()
+    for anchor in soup.find_all('a', {'class': 'list-text-indent', 'href': True}):
+        league_url = anchor['href']
+        if 'http' not in league_url:
+            league_url = ODDSCHECKER_URL + '/' + league_url
+        league_urls.add(league_url)
+    for league_url in league_urls:
+        matches.extend(get_matches_with_odds_from_url(league_url))
     return matches

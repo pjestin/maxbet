@@ -3,10 +3,10 @@
 
 import os
 import datetime
-import urllib.request
+from urllib.request import urlopen, urlretrieve, Request
 
 
-MAX_FILE_AGE_MINUTES = 10
+MAX_FILE_AGE_MINUTES = 1
 
 
 def download_data(url, file_path):
@@ -21,4 +21,9 @@ def download_data(url, file_path):
             download = True
     if download:
         print('Downloading data file from URL {}'.format(url))
-        urllib.request.urlretrieve(url, file_path)
+        urlretrieve(url, file_path)
+
+
+def get_page(url):
+    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    return urlopen(req).read()

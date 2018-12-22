@@ -29,7 +29,7 @@ def print_analysis():
     # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 1.1, Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.07,
+    params = {Simulation.BET_ODD_POWER: 0.7, Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.07,
               Simulation.MIN_RETURN: 1.02, Simulation.MAX_RETURN: 1.08}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
