@@ -17,10 +17,13 @@ ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
 
 
 def register_matches():
-    db.enrich(cotes.get_matches_with_odds())
-    db.enrich(scibet.get_matches())
-    db.enrich(fivethirtyeight.get_matches())
-    db.enrich(oddschecker.get_matches_with_odds())
+    matches = []
+    matches.extend(cotes.get_matches_with_odds())
+    matches.extend(scibet.get_matches())
+    matches.extend(fivethirtyeight.get_matches())
+    matches.extend(oddschecker.get_matches_with_odds())
+    db.enrich(matches)
+    # db.patch()
 
 
 def print_analysis():
@@ -29,8 +32,8 @@ def print_analysis():
     # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 0.7, Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.07,
-              Simulation.MIN_RETURN: 1.02, Simulation.MAX_RETURN: 1.08}
+    params = {Simulation.BET_ODD_POWER: 0.8, Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.26,
+              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 1.1}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
     # distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
@@ -53,7 +56,6 @@ def find_best_parameters():
 
 
 def print_interesting_matches():
-    # bet_matches = cotes.get_value_bets(params=[1., 0., 1.04, 5.])
     bet_matches = cotes.get_value_bets(params=[1., 0.07, 1.02, 1.08])
     matches_summary = distribution.get_matches_summary(bet_matches)
     print('Matches summary:\n{}'.format(matches_summary))

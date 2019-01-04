@@ -1,8 +1,6 @@
 import unittest
-from unittest.mock import patch
 from core.analysis.simulation import Simulation, ValueBetSimulation, TradeSimulation, ProbabilitySimulation
 import json
-from datetime import datetime, timezone, timedelta
 from collections import OrderedDict
 
 
@@ -18,6 +16,7 @@ class SimulationTest(unittest.TestCase):
                                  Simulation.MIN_PROB: 0.1, Simulation.MIN_RETURN: 0.8, Simulation.MAX_RETURN: 5.}
         self.params_trade = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0.,
                              Simulation.MIN_RATIO_VARIATION: -0.1, Simulation.MAX_RATIO_VARIATION: 0.}
+        Simulation.WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
 
     def test_value_bet_money(self):
         money = ValueBetSimulation.simulate_bets(self.match_data, self.params_value_bet)

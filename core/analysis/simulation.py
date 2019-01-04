@@ -9,8 +9,13 @@ import statistics
 class Simulation:
 
     BET_FACTOR = 0.5
-    DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M'
-    WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
+    DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
+    # WEBSITES = []
+    # WEBSITES = ['Skybet', 'Bet365', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports',
+    #             'Betway', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation',
+    #             'ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
+    WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
+    # WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
     BET_ODD_POWER = 'bet_odd_power'
     BET_RETURN_POWER = 'bet_return_power'
     MIN_PROB = 'min_prob'
@@ -58,7 +63,7 @@ class Simulation:
         print('Simulation parameters: {}'.format(params))
         bet_odd_power, bet_return_power = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER]
         money = [1.0]
-        for match in match_data.values():
+        for summary, match in match_data.items():
             result = cls.get_result(match['sides'])
             if not result:
                 continue
@@ -66,6 +71,7 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd, prob = condition
+                    print('Betting on {}, {}, {}, {}'.format(summary, website, odd, prob))
                     cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power)
         print('Number of bets: {}'.format(len(money) - 1))
         print('Money: {}'.format(money[-1]))
@@ -101,6 +107,8 @@ class ValueBetSimulation(Simulation):
             if 'odds' not in side:
                 continue
             for website, odds in side['odds'].items():
+                if not odds:
+                    continue
                 if website not in margins:
                     margins[website] = 0.0
                 margins[website] += 1.0 / odds[0][1]

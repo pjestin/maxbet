@@ -29,3 +29,7 @@ class DownloadTest(unittest.TestCase):
         download.download_data(TEST_URL, TEST_FILE_PATH)
         new_file_time = datetime.fromtimestamp(os.path.getmtime(TEST_FILE_PATH))
         self.assertEqual(file_time, new_file_time)
+
+    def test_get_page(self):
+        test_page = download.get_page(TEST_URL)
+        self.assertTrue(test_page)

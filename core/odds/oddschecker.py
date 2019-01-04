@@ -5,12 +5,19 @@ from core.common import download
 from core.common.model import Match
 from bs4 import BeautifulSoup
 import locale
-from datetime import datetime, timezone
-import urllib.request
+import datetime
 
 
 ODDSCHECKER_URL = 'https://www.oddschecker.com'
 URL_ROOT = ODDSCHECKER_URL + '/football/{}'
+
+
+def get_cleaned_odds(websites, odd_list):
+    odds = dict(zip(websites, odd_list))
+    for website in websites:
+        if not odds[website]:
+            del odds[website]
+    return odds
 
 
 def decode_match(match_url, home_team_name, away_team_name):
@@ -21,7 +28,10 @@ def decode_match(match_url, home_team_name, away_team_name):
     if not bet_table:
         return None
     datetime_string = bet_table['data-time']
-    match_datetime = datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc)
+    match_datetime = datetime.datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S')\
+        .replace(tzinfo=datetime.timezone.utc)
+    if match_datetime < datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc):
+        return None
     match = Match(match_datetime, home_team_name, away_team_name)
 
     websites = []
@@ -38,7 +48,7 @@ def decode_match(match_url, home_team_name, away_team_name):
         odd_list = []
         for odd_tag in side.find_all('td', {'data-odig': True}):
             odd_list.append(float(odd_tag['data-odig']))
-        match.teams[side_id].odds = dict(zip(websites, odd_list))
+        match.teams[side_id].odds = get_cleaned_odds(websites, odd_list)
 
     print('Decoded match: {}'.format(match))
     return match
