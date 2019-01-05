@@ -11,9 +11,9 @@ class Simulation:
     BET_FACTOR = 0.5
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
     # WEBSITES = []
-    # WEBSITES = ['Skybet', 'Bet365', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports',
-    #             'Betway', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation',
-    #             'ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
+    # WEBSITES = ['Unibet', 'Bet365', 'Skybet', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports', 'Redzone',
+    #             'Betway', 'BetBright', '10Bet', '188Bet', 'SportPesa', 'Sport Nation', 'Betfair', 'Betdaq',
+    #             'Smarkets', 'Ladbrokes', 'Coral', '888sport']
     WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
     # WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
     BET_ODD_POWER = 'bet_odd_power'

@@ -7,10 +7,8 @@ from core.common.model import Match, League
 import datetime
 import unidecode
 import csv
-from collections import OrderedDict
 
 MATCHES_URL = 'https://projects.fivethirtyeight.com/soccer-predictions/data.json'
-MATCHES_FILE = 'core/cache/fivethirtyeight/data.json'
 MATCHES_CSV_URL = 'https://projects.fivethirtyeight.com/soccer-api/club/spi_matches.csv'
 MATCHES_CSV_FILE = 'core/cache/fivethirtyeight/data.csv'
 
@@ -40,7 +38,8 @@ def get_league_from_id(league_id, data):
     return None
 
 
-def create_matches(data):
+def get_matches():
+    data = json.load(download.get_page(MATCHES_URL))
     matches = []
     for match_data in data[MATCHES]:
         match_datetime = datetime.datetime.strptime(match_data[DATETIME], '%Y-%m-%dT%H:%M:%SZ')
@@ -52,13 +51,7 @@ def create_matches(data):
         match.teams['2'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB2])
         match.league = get_league_from_id(match_data[LEAGUE_ID], data)
         matches.append(match)
-    matches_by_league = OrderedDict()
-    for match in matches:
-        if match.league not in matches_by_league:
-            matches_by_league[match.league] = []
-        matches_by_league[match.league].append(match)
-    print('Read {} matches under {} leagues'.format(len(matches), len(matches_by_league)))
-    return matches_by_league
+    return matches
 
 
 def create_matches_from_csv():
@@ -73,17 +66,3 @@ def create_matches_from_csv():
             match.teams['2'].score = match_data[SCORE2]
             matches.append(match)
     return matches
-
-
-def read_weekly_matches():
-    download.download_data(MATCHES_URL, MATCHES_FILE)
-    print('Reading matches data...')
-    with open(MATCHES_FILE, encoding='utf-8', newline='') as file:
-        data = json.load(file)
-        matches = create_matches(data)
-    return matches
-
-
-def get_matches():
-    matches = read_weekly_matches().values()
-    return [match for sublist in matches for match in sublist]

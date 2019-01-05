@@ -1,9 +1,8 @@
 import unittest
+from unittest.mock import patch
 from core.odds import fivethirtyeight
-import json
 from core.common.model import Match
 from datetime import datetime, timezone
-from collections import OrderedDict
 
 FIVETHIRTYEIGHT_DATA_PATH = 'core/test/odds/data/fivethirtyeight.json'
 TEAM_1_NAME = 'Erzurumspor'
@@ -13,19 +12,20 @@ FIVETHIRTYEIGHT = '538'
 
 class FiveThirtyEightTest(unittest.TestCase):
 
-    def test_create_matches(self):
+    @patch('core.common.download.get_page')
+    def test_get_matches(self, mocked_get_page):
         with open(FIVETHIRTYEIGHT_DATA_PATH, mode='r', encoding='latin-1') as file:
-            data = json.load(file, object_pairs_hook=OrderedDict)
-        matches = fivethirtyeight.create_matches(data)
-        self.assertEqual(31, len(matches))
-        match = next(iter(matches.values()))[0]
-        print('Match: {}'.format(match))
+            mocked_get_page.return_value = file
+            matches = fivethirtyeight.get_matches()
+            self.assertEqual(317, len(matches))
+            match = matches[0]
+            print('Match: {}'.format(match))
 
-        match_datetime = datetime(2018, 11, 24, 10, 30, tzinfo=timezone.utc)
-        expected_match = Match(match_datetime, TEAM_1_NAME, TEAM_2_NAME)
-        expected_match.teams['1'].probs[FIVETHIRTYEIGHT] = 0.41623
-        expected_match.teams['N'].probs[FIVETHIRTYEIGHT] = 0.2934
-        expected_match.teams['2'].probs[FIVETHIRTYEIGHT] = 0.29038
-        print('Expected match: {}'.format(expected_match))
+            match_datetime = datetime(2018, 11, 24, 10, 30, tzinfo=timezone.utc)
+            expected_match = Match(match_datetime, TEAM_1_NAME, TEAM_2_NAME)
+            expected_match.teams['1'].probs[FIVETHIRTYEIGHT] = 0.41623
+            expected_match.teams['N'].probs[FIVETHIRTYEIGHT] = 0.2934
+            expected_match.teams['2'].probs[FIVETHIRTYEIGHT] = 0.29038
+            print('Expected match: {}'.format(expected_match))
 
-        self.assertEqual(expected_match, match)
+            self.assertEqual(expected_match, match)
