@@ -39,7 +39,7 @@ def get_league_from_id(league_id, data):
 
 
 def get_matches():
-    data = json.load(download.get_page(MATCHES_URL))
+    data = json.loads(download.get_page(MATCHES_URL))
     matches = []
     for match_data in data[MATCHES]:
         match_datetime = datetime.datetime.strptime(match_data[DATETIME], '%Y-%m-%dT%H:%M:%SZ')
@@ -50,6 +50,7 @@ def get_matches():
         match.teams['N'].probs[FIVETHIRTYEIGHT] = float(match_data[PROBTIE])
         match.teams['2'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB2])
         match.league = get_league_from_id(match_data[LEAGUE_ID], data)
+        print('Decoded match: {}'.format(match))
         matches.append(match)
     return matches
 

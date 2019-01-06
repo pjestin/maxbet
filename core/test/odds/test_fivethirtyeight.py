@@ -15,7 +15,7 @@ class FiveThirtyEightTest(unittest.TestCase):
     @patch('core.common.download.get_page')
     def test_get_matches(self, mocked_get_page):
         with open(FIVETHIRTYEIGHT_DATA_PATH, mode='r', encoding='latin-1') as file:
-            mocked_get_page.return_value = file
+            mocked_get_page.return_value = file.read()
             matches = fivethirtyeight.get_matches()
             self.assertEqual(317, len(matches))
             match = matches[0]
