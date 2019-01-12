@@ -18,10 +18,10 @@ ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
 
 def register_matches():
     matches = []
-    matches.extend(cotes.get_matches_with_odds())
     matches.extend(scibet.get_matches())
     matches.extend(fivethirtyeight.get_matches())
     matches.extend(oddschecker.get_matches_with_odds())
+    matches.extend(cotes.get_matches_with_odds())
     db.enrich(matches)
     # db.patch()
 
@@ -32,7 +32,7 @@ def print_analysis():
     # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 0.8, Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.05,
+    params = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
               Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 10.}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))

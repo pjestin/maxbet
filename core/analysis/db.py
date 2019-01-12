@@ -100,7 +100,7 @@ def get_finished_match_data():
         if SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]\
                 and SCORE in match[SIDES][SIDE_1] and SCORE in match[SIDES][SIDE_2]:
             finished_match_data[summary] = match
-    return finished_match_data
+    return OrderedDict(sorted(finished_match_data.items()))
 
 
 def remove_late_odds(data):

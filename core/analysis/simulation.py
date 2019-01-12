@@ -11,7 +11,7 @@ class Simulation:
     BET_FACTOR = 0.5
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
     # WEBSITES = []
-    # WEBSITES = ['Unibet', 'Bet365', 'Skybet', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports', 'Redzone',
+    # WEBSITES = ['Bet365', 'Skybet', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports', 'Redzone',
     #             'Betway', 'BetBright', '10Bet', '188Bet', 'SportPesa', 'Sport Nation', 'Betfair', 'Betdaq',
     #             'Smarkets', 'Ladbrokes', 'Coral', '888sport']
     WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
