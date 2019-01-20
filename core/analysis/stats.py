@@ -75,12 +75,14 @@ def stats_on_return(match_data):
 
 def stats_on_return_integral(match_data):
     contrib_per_return = get_contrib_per_return(match_data)
-    x, y = [0.], [0.]
+    x, y, z = [0.], [0.], [0]
     for rounded_return, contribs in sorted(contrib_per_return.items()):
         x.append(rounded_return)
         y.append(y[-1] + sum(contribs))
+        z.append(len(contribs))
 
     plt.plot(x, y)
+    plt.plot(x, z)
     plt.title('Contribution per return')
     plt.xlabel('Rounded return')
     plt.ylabel('Contribution')

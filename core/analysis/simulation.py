@@ -11,10 +11,9 @@ class Simulation:
     BET_FACTOR = 0.5
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
     # WEBSITES = []
-    # WEBSITES = ['Bet365', 'Skybet', 'William Hill', 'Marathon Bet', 'Bet Victor', 'Boyle Sports', 'Redzone',
-    #             'Betway', 'BetBright', '10Bet', '188Bet', 'SportPesa', 'Sport Nation', 'Betfair', 'Betdaq',
-    #             'Smarkets', 'Ladbrokes', 'Coral', '888sport']
-    WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
+    WEBSITES = ['William Hill', 'Marathon Bet', 'Boyle Sports', 'Betway', 'BetBright', '10Bet', 'SportPesa',
+                'Sport Nation', 'Smarkets', 'Coral', 'Sportingbet', 'Royal Panda']
+    # WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
     # WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
     BET_ODD_POWER = 'bet_odd_power'
     BET_RETURN_POWER = 'bet_return_power'
@@ -71,7 +70,8 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd, prob = condition
-                    print('Betting on {}, {}, {}, {}'.format(summary, website, odd, prob))
+                    print('Betting on {}, {}, {}, {} - Bet: {}; Result: {}'
+                          .format(summary, website, odd, prob, side_id, result))
                     cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power)
         print('Number of bets: {}'.format(len(money) - 1))
         print('Money: {}'.format(money[-1]))

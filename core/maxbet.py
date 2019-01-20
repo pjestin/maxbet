@@ -33,12 +33,13 @@ def print_analysis():
     # stats.stats_on_probabilities(match_data)
 
     params = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
-              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 10.}
+              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 100.}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
     # distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
 
-    # params = {Simulation.BET_ODD_POWER: 1., Simulation.MIN_RATIO_VARIATION: -1., Simulation.MAX_RATIO_VARIATION: -0.3}
+    # params = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_RATIO_VARIATION: 0.4,
+    #           Simulation.MAX_RATIO_VARIATION: 1.}
     # distribution.plot_log(TradeSimulation.simulate_bets(match_data, params))
 
 
