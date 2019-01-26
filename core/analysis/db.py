@@ -95,12 +95,19 @@ def get_match_data():
 
 def get_finished_match_data():
     match_data = get_match_data()
-    finished_match_data = {}
-    for summary, match in match_data.items():
-        if SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]\
-                and SCORE in match[SIDES][SIDE_1] and SCORE in match[SIDES][SIDE_2]:
-            finished_match_data[summary] = match
+    finished_match_data = {summary: match for summary, match in match_data.items()
+                           if SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]
+                           and SCORE in match[SIDES][SIDE_1] and SCORE in match[SIDES][SIDE_2]}
     return OrderedDict(sorted(finished_match_data.items()))
+
+
+def get_future_match_data():
+    match_data = get_match_data()
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    future_match_data = {summary: match for summary, match in match_data.items()
+                         if datetime.datetime.strptime(match[DATETIME], DATE_TIME_FORMAT) > now
+                         and SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]}
+    return OrderedDict(sorted(future_match_data.items()))
 
 
 def remove_late_odds(data):
