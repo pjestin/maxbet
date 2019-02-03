@@ -12,6 +12,11 @@ BET_ODD_POWER = 0.
 RESOLUTION = 0.005
 PROB_POWER = 1.
 
+WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
+            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
+            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
+            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+
 
 def stats_on_day(match_data):
     day_lose = 0
@@ -46,9 +51,10 @@ def get_contrib_per_return(match_data):
         if not result:
             continue
         for side_id, side in match['sides'].items():
-            for current_time in ValueBetSimulation.get_odd_times(side):
-                current_odds = ValueBetSimulation.current_numbers(side['odds'], current_time)
-                best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds)
+            odd_times = ValueBetSimulation.get_odd_times(side)
+            for current_time in odd_times.values():
+                current_odds = ValueBetSimulation.current_numbers(side['odds'], current_time, odd_times)
+                best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds, WEBSITES)
                 prob = ValueBetSimulation.get_prob(current_odds, margins)
                 rounded_return = float(int(best_odd * math.pow(prob, PROB_POWER) / RESOLUTION)) * RESOLUTION
                 contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER, prob, 0.)

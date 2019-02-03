@@ -2,8 +2,14 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 
 from .models import BetMatch, RefreshTime
+from core.analysis import db
+from core.analysis.simulation import Simulation
+from core.common import distribution
 
-from core.odds import cotes
+WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
+            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
+            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
+            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
 
 
 def index(request):
@@ -39,7 +45,10 @@ def bet(request):
 
 def bet_refresh(request):
     BetMatch.objects.all().delete()
-    bet_matches = cotes.get_value_bets(params=[1., 0., 1.02, 1.08])
+    matches = db.get_future_match_data()
+    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
+              Simulation.MIN_RETURN: 1.05, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES}
+    bet_matches = distribution.get_value_bets(params, matches)
     for summary, side_id, website, odd, match_datetime, bet_fraction in bet_matches:
         bet_match = BetMatch(summary=summary, side=side_id, website=website, odd=odd,
                              bet_fraction=bet_fraction, match_datetime=match_datetime)

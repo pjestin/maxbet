@@ -8,10 +8,6 @@ import matplotlib.pyplot as plt
 from core.analysis.simulation import ValueBetSimulation
 
 BET_FACTOR = 0.5
-WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
-            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
-            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
-            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
 
 
 def get_value_bets(params, matches):

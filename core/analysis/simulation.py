@@ -4,6 +4,8 @@
 import datetime
 import math
 import statistics
+import logging
+from collections import OrderedDict
 
 
 class Simulation:
@@ -18,6 +20,8 @@ class Simulation:
     MAX_RETURN = 'max_return'
     MIN_RATIO_VARIATION = 'min_ratio_variation'
     MAX_RATIO_VARIATION = 'max_ratio_variation'
+
+    datetime_cache = {}
 
     @classmethod
     def get_result(cls, side_data):
@@ -66,10 +70,9 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd, prob = condition
-                    print('Betting on {}, {}, {}, {} - Bet: {}; Result: {}'
-                          .format(summary, website, odd, prob, side_id, result))
+                    print('Money: {}; betting on {}, {}, {}, {} - Bet: {}; Result: {}'
+                          .format(money[-1], summary, website, odd, prob, side_id, result))
                     cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power)
-                    print('Money: {}'.format(money[-1]))
         print('Number of bets: {}'.format(len(money) - 1))
         print('Money: {}'.format(money[-1]))
         print('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
@@ -126,25 +129,15 @@ class ValueBetSimulation(Simulation):
 
     @classmethod
     def get_odd_times(cls, side):
-        odd_times = []
+        odd_times = {}
         if 'odds' not in side:
             return odd_times
         for odds in side['odds'].values():
             for odd_time, _ in odds:
                 odd_datetime = datetime.datetime.strptime(odd_time, cls.DATE_TIME_FORMAT)
-                if odd_datetime not in odd_times:
-                    odd_times.append(odd_datetime)
-        return sorted(odd_times)
-
-    @classmethod
-    def current_numbers(cls, numbers, current_time):
-        current_number = {}
-        for website, website_numbers in numbers.items():
-            for time, number in website_numbers:
-                if datetime.datetime.strptime(time, cls.DATE_TIME_FORMAT) > current_time:
-                    break
-                current_number[website] = number
-        return current_number
+                if odd_time not in odd_times:
+                    odd_times[odd_time] = odd_datetime
+        return OrderedDict(sorted(odd_times.items()))
 
     @classmethod
     def condition_for_bet(cls, match, side, params):
@@ -153,13 +146,31 @@ class ValueBetSimulation(Simulation):
             return None
         min_prob, min_return, max_return, websites = params[cls.MIN_PROB], params[cls.MIN_RETURN],\
                                                      params[cls.MAX_RETURN], params[cls.WEBSITES]
-        for current_time in cls.get_odd_times(side):
-            current_odds = cls.current_numbers(side['odds'], current_time)
+        odd_times = cls.get_odd_times(side)
+        for current_time in odd_times.values():
+            current_odds = cls.current_numbers(side['odds'], current_time, odd_times)
             best_website, best_odd = cls.get_best_odd(current_odds, websites)
             prob = cls.get_prob(current_odds, margins)
             if min_return < best_odd * prob < max_return and prob > min_prob:
                 return best_website, best_odd, prob
         return None
+
+    @classmethod
+    def get_website_number(cls, website_numbers, current_time, odd_times):
+        result_number = website_numbers[0][1]
+        for time, number in website_numbers:
+            if odd_times[time] > current_time:
+                return result_number
+            result_number = number
+        return result_number
+
+    @classmethod
+    def current_numbers(cls, numbers, current_time, odd_times):
+        current_number = {website: cls.get_website_number(website_numbers, current_time, odd_times)
+                          for website, website_numbers in numbers.items()
+                          if website_numbers
+                          and odd_times[website_numbers[0][0]] <= current_time}
+        return current_number
 
 
 class ProbabilitySimulation(ValueBetSimulation):
@@ -170,10 +181,11 @@ class ProbabilitySimulation(ValueBetSimulation):
             return None
         min_prob, min_return, max_return, websites = params[cls.MIN_PROB], params[cls.MIN_RETURN],\
                                                      params[cls.MAX_RETURN], params[cls.WEBSITES]
-        for current_time in cls.get_odd_times(side):
-            current_odds = cls.current_numbers(side['odds'], current_time)
+        odd_times = cls.get_odd_times(side)
+        for current_time in odd_times.values():
+            current_odds = cls.current_numbers(side['odds'], current_time, odd_times)
             best_website, best_odd = cls.get_best_odd(current_odds, websites)
-            current_probs = cls.current_numbers(side['probs'], current_time)
+            current_probs = cls.current_numbers(side['probs'], current_time, odd_times)
             if current_probs:
                 prob = statistics.mean(current_probs.values())
                 if min_return < best_odd * prob < max_return and prob > min_prob:

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import argparse
+import logging
 
 import scipy.optimize as optimize
 
@@ -18,14 +19,15 @@ BET = 'bet'
 ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
 
 # WEBSITES = []
-WEBSITES = ['William Hill', 'Marathon Bet', 'Boyle Sports', 'Betway', 'BetBright', '10Bet', 'SportPesa',
-            'Sport Nation', 'Smarkets', 'Coral', 'Sportingbet', 'Royal Panda']
-# WEBSITES = ['Bet365', 'Marathon Bet', 'Boyle Sports', 'Sportingbet', 'Royal Panda']
-# WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
-# WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
-#             'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
-#             '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
-#             'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+# WEBSITES = ['William Hill', 'Marathon Bet', 'Boyle Sports', 'Betway', 'BetBright', '10Bet', 'SportPesa',
+#             'Sport Nation', 'Smarkets', 'Coral', 'Sportingbet', 'Royal Panda']
+WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
+            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
+            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
+            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+# WEBSITES = ['Skybet', 'Marathon Bet', 'Betfair Sportsbook', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type',
+#             'Redzone', 'Betway', 'BetBright', '10Bet', 'Sportingbet', '188Bet', 'Royal Panda', 'Sport Nation',
+#             'Betfair', 'Matchbook', 'Smarkets']
 
 
 def register_matches():
@@ -45,7 +47,7 @@ def print_analysis():
     # stats.stats_on_probabilities(match_data)
 
     params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
-              Simulation.MIN_RETURN: 1.005, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES}
+              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
     # distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
@@ -80,7 +82,16 @@ def print_interesting_matches():
 def main():
     parser = argparse.ArgumentParser(description='Analysis on football matches')
     parser.add_argument('action', help='Specify script action')
+    parser.add_argument('-v', '--verbose', help='Display more logs', action='store_true')
     args = parser.parse_args()
+
+    log_format = '%(asctime)-15s %(message)s'
+    if args.verbose:
+        logging.basicConfig(format=log_format, level=logging.DEBUG)
+        logging.info("Verbose output.")
+    else:
+        logging.basicConfig(format=log_format)
+
     if args.action == REGISTER:
         register_matches()
     elif args.action == ANALYSE:

@@ -22,11 +22,14 @@ def get_cleaned_odds(websites, odd_list):
 
 def decode_match(match_url, home_team_name, away_team_name):
     match_page = download.get_page(match_url)
-    match_soup = BeautifulSoup(match_page, 'html.parser')
+    if not match_page:
+        return None
 
+    match_soup = BeautifulSoup(match_page, 'html.parser')
     bet_table = match_soup.find('table', {'class': 'eventTable'})
     if not bet_table:
         return None
+
     datetime_string = bet_table['data-time']
     match_datetime = datetime.datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S')\
         .replace(tzinfo=datetime.timezone.utc)
@@ -66,7 +69,7 @@ def get_matches_with_odds_from_url(league_url):
         home_team_name = team_paragraphs[0].contents[0]
         away_team_name = team_paragraphs[1].contents[0]
         anchor = row.find('a', {'class': 'beta-callout full-height-link whole-row-link', 'href': True})
-        match_url = ODDSCHECKER_URL + anchor['href']
+        match_url = ODDSCHECKER_URL + ('/' if not anchor['href'].startswith('/') else '') + anchor['href']
         match = decode_match(match_url, home_team_name, away_team_name)
         if match:
             matches.append(match)

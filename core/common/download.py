@@ -4,6 +4,8 @@
 import os
 import datetime
 from urllib.request import urlopen, urlretrieve, Request
+from urllib.error import URLError
+import logging
 
 
 MAX_FILE_AGE_MINUTES = 1
@@ -25,5 +27,9 @@ def download_data(url, file_path):
 
 
 def get_page(url):
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    return urlopen(req).read()
+    try:
+        req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        return urlopen(req).read()
+    except URLError as e:
+        logging.error('Error while trying to get page {}: {}'.format(url, e))
+    return None
