@@ -14,6 +14,9 @@
         <a href="{% url 'dashboard:bet-refresh' %}"><i class="fa fa-refresh fa-fw"></i> Refresh</a>
         <br/>
         <em>Last refreshed: {{ refresh_time }}</em>
+        <br/>
+        <br/>
+        <p>Number of bet matches: {{ bet_matches|length }}</p>
         <hr/>
     </div>
 </div>

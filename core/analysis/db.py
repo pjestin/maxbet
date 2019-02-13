@@ -62,7 +62,7 @@ def update_match_data(match, match_data, now):
             team_data[SCORE] = team.score
 
 
-def enrich_data(matches, data):
+def get_enriched_data(matches, data):
     now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime(DATE_TIME_FORMAT)
     for match in matches:
         datetime_string = match.datetime.strftime(DATE_TIME_FORMAT)
@@ -76,6 +76,7 @@ def enrich_data(matches, data):
         print('Updating match: {}'.format(this_summary))
         update_match_data(match, this_match_data, now)
         data[this_summary] = this_match_data
+    return sorted_matches_by_time(data)
 
 
 def enrich(matches):
@@ -83,7 +84,7 @@ def enrich(matches):
         data = json.load(file, object_pairs_hook=OrderedDict)
     with open(BACKUP_DATA_FILE, mode='w') as backup:
         json.dump(data, backup)
-    enrich_data(matches, data)
+    data = get_enriched_data(matches, data)
     with open(DATA_FILE, mode='w') as file:
         json.dump(data, file)
 
@@ -98,7 +99,7 @@ def get_finished_match_data():
     finished_match_data = {summary: match for summary, match in match_data.items()
                            if SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]
                            and SCORE in match[SIDES][SIDE_1] and SCORE in match[SIDES][SIDE_2]}
-    return OrderedDict(sorted(finished_match_data.items()))
+    return sorted_matches_by_time(finished_match_data)
 
 
 def get_future_match_data():
@@ -107,7 +108,7 @@ def get_future_match_data():
     future_match_data = {summary: match for summary, match in match_data.items()
                          if datetime.datetime.strptime(match[DATETIME], DATE_TIME_FORMAT) > now
                          and SIDES in match and SIDE_1 in match[SIDES] and SIDE_2 in match[SIDES]}
-    return OrderedDict(sorted(future_match_data.items()))
+    return sorted_matches_by_time(future_match_data)
 
 
 def remove_late_odds(data):
@@ -154,11 +155,47 @@ def add_bet_time_zone(data):
     data[summary] = match_data
 
 
+def sorted_matches_by_time(data):
+    sorted_data = OrderedDict(sorted(data.items()))
+    print('Sorted {} matches'.format(len(sorted_data)))
+    return sorted_data
+
+
+def remove_useless_matches(data):
+    count = 0
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    for summary, match_data in dict(data).items():
+        match_datetime = datetime.datetime.strptime(match_data[DATETIME], DATE_TIME_FORMAT)
+        if match_datetime < now - datetime.timedelta(days=1) \
+                and (ODDS not in match_data[SIDES][SIDE_1] or not match_data[SIDES][SIDE_1][ODDS]) \
+                and (ODDS not in match_data[SIDES][SIDE_N] or not match_data[SIDES][SIDE_N][ODDS]) \
+                and (ODDS not in match_data[SIDES][SIDE_2] or not match_data[SIDES][SIDE_2][ODDS]):
+            print('Deleting match: {}'.format(match_data))
+            del data[summary]
+            count += 1
+    print('Deleted {} matches'.format(count))
+
+
 def patch():
     with open(DATA_FILE) as file:
         data = json.load(file, object_pairs_hook=OrderedDict)
     with open(BACKUP_DATA_FILE, mode='w') as backup:
         json.dump(data, backup)
-    remove_late_odds(data)
+    remove_useless_matches(data)
     with open(DATA_FILE, mode='w') as file:
         json.dump(data, file)
+
+
+def print_finished_matches_without_score():
+    with open(DATA_FILE) as file:
+        data = json.load(file, object_pairs_hook=OrderedDict)
+    sorted_data = OrderedDict(sorted(data.items()))
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    count = 0
+    for summary, match_data in sorted_data.items():
+        match_datetime = datetime.datetime.strptime(match_data[DATETIME], DATE_TIME_FORMAT)
+        if match_datetime < now - datetime.timedelta(hours=2) and \
+                (SCORE not in match_data[SIDES][SIDE_1] or SCORE not in match_data[SIDES][SIDE_1]):
+            count += 1
+            print('Finished match without score: {}'.format(summary))
+    print('Number of incomplete matches: {}'.format(count))

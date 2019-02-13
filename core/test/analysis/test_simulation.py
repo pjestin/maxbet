@@ -15,10 +15,10 @@ class SimulationTest(unittest.TestCase):
         websites = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
         self.params_value_bet = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0.,
                                  Simulation.MIN_PROB: 0.1, Simulation.MIN_RETURN: 0.8, Simulation.MAX_RETURN: 5.,
-                                 Simulation.WEBSITES: websites}
+                                 Simulation.WEBSITES: websites, Simulation.BET_FACTOR: .5}
         self.params_trade = {Simulation.BET_ODD_POWER: 1., Simulation.BET_RETURN_POWER: 0.,
                              Simulation.MIN_RATIO_VARIATION: -0.1, Simulation.MAX_RATIO_VARIATION: 0.,
-                             Simulation.WEBSITES: websites}
+                             Simulation.WEBSITES: websites, Simulation.BET_FACTOR: .5}
 
     def test_value_bet_money(self):
         money = ValueBetSimulation.simulate_bets(self.match_data, self.params_value_bet)

@@ -6,10 +6,8 @@ from core.analysis import db
 from core.analysis.simulation import Simulation
 from core.common import distribution
 
-WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
-            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
-            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
-            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+WEBSITES = ['William Hill', 'Marathon Bet', 'Boyle Sports', 'Betway', 'BetBright', '10Bet', 'SportPesa',
+            'Sport Nation', 'Smarkets', 'Coral', 'Sportingbet', 'Royal Panda']
 
 
 def index(request):

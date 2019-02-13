@@ -10,7 +10,6 @@ from collections import OrderedDict
 
 class Simulation:
 
-    BET_FACTOR = 0.5
     DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
     WEBSITES = 'websites'
     BET_ODD_POWER = 'bet_odd_power'
@@ -20,8 +19,7 @@ class Simulation:
     MAX_RETURN = 'max_return'
     MIN_RATIO_VARIATION = 'min_ratio_variation'
     MAX_RATIO_VARIATION = 'max_ratio_variation'
-
-    datetime_cache = {}
+    BET_FACTOR = 'bet_factor'
 
     @classmethod
     def get_result(cls, side_data):
@@ -37,8 +35,8 @@ class Simulation:
         return result
 
     @classmethod
-    def get_contribution(cls, odd, success, bet_odd_power, prob, bet_return_power):
-        amount = cls.BET_FACTOR / pow(odd, bet_odd_power)
+    def get_contribution(cls, odd, success, bet_odd_power, prob, bet_return_power, bet_factor):
+        amount = bet_factor / pow(odd, bet_odd_power)
         if prob:
             amount *= pow(odd * prob - 1., bet_return_power)
         if amount < 0.:
@@ -49,8 +47,9 @@ class Simulation:
             return -amount
 
     @classmethod
-    def bet(cls, money, odd, success, bet_odd_power, prob, bet_return_power):
-        new_money = money[-1] * (1 + cls.get_contribution(odd, success, bet_odd_power, prob, bet_return_power))
+    def bet(cls, money, odd, success, bet_odd_power, prob, bet_return_power, bet_factor):
+        new_money = money[-1] * (1 + cls.get_contribution(odd, success, bet_odd_power, prob, bet_return_power,
+                                                          bet_factor))
         money.append(new_money)
 
     @classmethod
@@ -60,8 +59,10 @@ class Simulation:
     @classmethod
     def simulate_bets(cls, match_data, params):
         print('Simulation parameters: {}'.format(params))
-        bet_odd_power, bet_return_power = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER]
+        bet_odd_power, bet_return_power, bet_factor = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER],\
+                                                      params[cls.BET_FACTOR]
         money = [1.0]
+        begin_date, end_date = None, None
         for summary, match in match_data.items():
             result = cls.get_result(match['sides'])
             if not result:
@@ -72,17 +73,26 @@ class Simulation:
                     website, odd, prob = condition
                     print('Money: {}; betting on {}, {}, {}, {} - Bet: {}; Result: {}'
                           .format(money[-1], summary, website, odd, prob, side_id, result))
-                    cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power)
+                    cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power, bet_factor)
+                    if not begin_date:
+                        begin_date = match['datetime']
+                    end_date = match['datetime']
+        time_difference = datetime.datetime.strptime(end_date, cls.DATE_TIME_FORMAT) -\
+                          datetime.datetime.strptime(begin_date, cls.DATE_TIME_FORMAT)
+        year_prospect = math.pow(money[-1], 365.25 / time_difference.days) if time_difference.days else 0.
         print('Number of bets: {}'.format(len(money) - 1))
         print('Money: {}'.format(money[-1]))
         print('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
+        print('Elapsed time: {}'.format(time_difference))
+        print('Prospect in 1 year: {}; 3 years: {}'.format(year_prospect, math.pow(year_prospect, 3.)))
         return money
 
     @classmethod
     def simulate_contributions(cls, match_data, params):
         print('Simulation parameters: {}'.format(params))
         contrib = [0.]
-        bet_odd_power, bet_return_power = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER]
+        bet_odd_power, bet_return_power, bet_factor = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER],\
+                                                      params[cls.BET_FACTOR]
         for match in match_data.values():
             result = cls.get_result(match['sides'])
             if not result:
@@ -92,7 +102,8 @@ class Simulation:
                 if condition:
                     _, odd, prob = condition
                     contrib.append(contrib[-1] +
-                                   cls.get_contribution(odd, result == side_id, bet_odd_power, prob, bet_return_power))
+                                   cls.get_contribution(odd, result == side_id, bet_odd_power, prob, bet_return_power,
+                                                        bet_factor))
         print('Number of contributions: {}'.format(len(contrib)))
         print('Total: {}'.format(contrib[-1]))
         return contrib
@@ -182,6 +193,8 @@ class ProbabilitySimulation(ValueBetSimulation):
         min_prob, min_return, max_return, websites = params[cls.MIN_PROB], params[cls.MIN_RETURN],\
                                                      params[cls.MAX_RETURN], params[cls.WEBSITES]
         odd_times = cls.get_odd_times(side)
+        print('Match: {}'.format(match))
+        print('Odd times: {}'.format(odd_times))
         for current_time in odd_times.values():
             current_odds = cls.current_numbers(side['odds'], current_time, odd_times)
             best_website, best_odd = cls.get_best_odd(current_odds, websites)
