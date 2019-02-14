@@ -2,6 +2,7 @@ from core.common import download
 import json
 import re
 from datetime import datetime, timezone
+import logging
 import unidecode
 
 from bs4 import BeautifulSoup
@@ -44,7 +45,7 @@ def get_json_data(url):
 
 
 def get_matches_from_url(url):
-    print('Processing league: {}'.format(url))
+    logging.info('Processing league: {}'.format(url))
     json_data = get_json_data(url)
     matches = []
     if MATCHES not in json_data[FOOTBALL][COMPETITION_MATCHES]:
@@ -58,7 +59,7 @@ def get_matches_from_url(url):
         match = Match(match_datetime, home_team_name, away_team_name)
         match.teams['1'].score = int(match_data[FULL_TIME_SCORE][HOME])
         match.teams['2'].score = int(match_data[FULL_TIME_SCORE][AWAY])
-        print('Decoded match: {}'.format(match))
+        logging.info('Decoded match: {}'.format(match))
         matches.append(match)
     return matches
 

@@ -28,10 +28,10 @@ ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
 # WEBSITES = ['Skybet', 'Marathon Bet', 'Betfair Sportsbook', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type',
 #             'Redzone', 'Betway', 'BetBright', '10Bet', 'Sportingbet', '188Bet', 'Royal Panda', 'Sport Nation',
 #             'Betfair', 'Matchbook', 'Smarkets']
-WEBSITES = ['Skybet', 'Marathon Bet', 'Betfair Sportsbook', 'Coral', 'Boyle Sports', 'Betway', 'Sportingbet',
-            '888sport', 'Royal Panda', 'Sport Nation', 'Betfair', 'Smarkets', 'Spreadex']
+# WEBSITES = ['Skybet', 'Marathon Bet', 'Betfair Sportsbook', 'Coral', 'Boyle Sports', 'Betway', 'Sportingbet',
+#             '888sport', 'Royal Panda', 'Sport Nation', 'Betfair', 'Smarkets', 'Spreadex']
 # WEBSITES = ['Marathon Bet', 'Betway', 'Sportingbet', 'Matchbook', 'Smarkets']
-# WEBSITES = ['Betway', 'William Hill', 'Sportingbet', 'Coral', 'Betdaq']
+WEBSITES = ['Betway', 'William Hill', 'Sportingbet', 'Coral', 'Betdaq']
 
 
 def register_matches():
@@ -52,8 +52,8 @@ def print_analysis():
     # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
-              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
+    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.3,
+              Simulation.MIN_RETURN: 1.05, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
               Simulation.BET_FACTOR: .5 / len(WEBSITES)}
     distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
@@ -72,19 +72,19 @@ def find_best_parameters():
                                x0=x_0, bounds=bounds, method='SLSQP', options={'eps': 0.001})
     if result.success:
         fitted_params = result.x
-        print(fitted_params)
+        logging.info(fitted_params)
     else:
         raise ValueError(result.message)
 
 
 def print_interesting_matches():
     matches = db.get_future_match_data()
-    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.25,
-              Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
+    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.3,
+              Simulation.MIN_RETURN: 1.05, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
               Simulation.BET_FACTOR: .5}
     bet_matches = distribution.get_value_bets(params, matches)
     matches_summary = distribution.get_matches_summary(bet_matches)
-    print('Matches summary:\n{}'.format(matches_summary))
+    logging.info('Matches summary:\n{}'.format(matches_summary))
 
 
 def main():
@@ -98,7 +98,7 @@ def main():
         logging.basicConfig(format=log_format, level=logging.DEBUG)
         logging.info("Verbose output.")
     else:
-        logging.basicConfig(format=log_format)
+        logging.basicConfig(format=log_format, level=logging.INFO)
 
     if args.action == REGISTER:
         register_matches()

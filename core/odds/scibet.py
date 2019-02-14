@@ -1,12 +1,15 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from core.common import download
-from bs4 import BeautifulSoup
-from core.common.model import Match
 import datetime
 import re
 import unidecode
+import logging
+
+from bs4 import BeautifulSoup
+
+from core.common import download
+from core.common.model import Match
 
 URL_FOOTBALL = 'https://www.scibet.com/football'
 SCIBET = 'Scibet'
@@ -14,7 +17,7 @@ STYLE_PATTERN = '.*width:(\d*.?\d*)%.*'
 
 
 def get_matches_from_url(url):
-    print('Processing league: {}'.format(url))
+    logging.info('Processing league: {}'.format(url))
     matches = []
     page = download.get_page(url)
     soup = BeautifulSoup(page, 'html.parser')
@@ -54,7 +57,7 @@ def get_matches_from_url(url):
                 if len(probs) == 3 and probs[i]:
                     match.teams[side].probs[SCIBET] = float(probs[i].group(1)) / 100.0
                 i += 1
-        print('Decoded match: {}'.format(match))
+        logging.info('Decoded match: {}'.format(match))
         matches.append(match)
     return matches
 

@@ -1,12 +1,14 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from core.common import download
-import json
-from core.common.model import Match, League
 import datetime
-import unidecode
 import csv
+import logging
+import json
+import unidecode
+
+from core.common import download
+from core.common.model import Match, League
 
 MATCHES_URL = 'https://projects.fivethirtyeight.com/soccer-predictions/data.json'
 MATCHES_CSV_URL = 'https://projects.fivethirtyeight.com/soccer-api/club/spi_matches.csv'
@@ -50,7 +52,7 @@ def get_matches():
         match.teams['N'].probs[FIVETHIRTYEIGHT] = float(match_data[PROBTIE])
         match.teams['2'].probs[FIVETHIRTYEIGHT] = float(match_data[PROB2])
         match.league = get_league_from_id(match_data[LEAGUE_ID], data)
-        print('Decoded match: {}'.format(match))
+        logging.info('Decoded match: {}'.format(match))
         matches.append(match)
     return matches
 

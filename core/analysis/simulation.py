@@ -58,7 +58,7 @@ class Simulation:
 
     @classmethod
     def simulate_bets(cls, match_data, params):
-        print('Simulation parameters: {}'.format(params))
+        logging.info('Simulation parameters: {}'.format(params))
         bet_odd_power, bet_return_power, bet_factor = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER],\
                                                       params[cls.BET_FACTOR]
         money = [1.0]
@@ -71,7 +71,7 @@ class Simulation:
                 condition = cls.condition_for_bet(match, side, params)
                 if condition:
                     website, odd, prob = condition
-                    print('Money: {}; betting on {}, {}, {}, {} - Bet: {}; Result: {}'
+                    logging.info('Money: {}; betting on {}, {}, {}, {} - Bet: {}; Result: {}'
                           .format(money[-1], summary, website, odd, prob, side_id, result))
                     cls.bet(money, odd, result == side_id, bet_odd_power, prob, bet_return_power, bet_factor)
                     if not begin_date:
@@ -80,16 +80,16 @@ class Simulation:
         time_difference = datetime.datetime.strptime(end_date, cls.DATE_TIME_FORMAT) -\
                           datetime.datetime.strptime(begin_date, cls.DATE_TIME_FORMAT)
         year_prospect = math.pow(money[-1], 365.25 / time_difference.days) if time_difference.days else 0.
-        print('Number of bets: {}'.format(len(money) - 1))
-        print('Money: {}'.format(money[-1]))
-        print('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
-        print('Elapsed time: {}'.format(time_difference))
-        print('Prospect in 1 year: {}; 3 years: {}'.format(year_prospect, math.pow(year_prospect, 3.)))
+        logging.info('Number of bets: {}'.format(len(money) - 1))
+        logging.info('Money: {}'.format(money[-1]))
+        logging.info('Geometric mean: {}'.format(math.pow(money[-1], (1.0 / len(money)))))
+        logging.info('Elapsed time: {}'.format(time_difference))
+        logging.info('Prospect in 1 year: {}; 3 years: {}'.format(year_prospect, math.pow(year_prospect, 3.)))
         return money
 
     @classmethod
     def simulate_contributions(cls, match_data, params):
-        print('Simulation parameters: {}'.format(params))
+        logging.info('Simulation parameters: {}'.format(params))
         contrib = [0.]
         bet_odd_power, bet_return_power, bet_factor = params[cls.BET_ODD_POWER], params[cls.BET_RETURN_POWER],\
                                                       params[cls.BET_FACTOR]
@@ -104,8 +104,8 @@ class Simulation:
                     contrib.append(contrib[-1] +
                                    cls.get_contribution(odd, result == side_id, bet_odd_power, prob, bet_return_power,
                                                         bet_factor))
-        print('Number of contributions: {}'.format(len(contrib)))
-        print('Total: {}'.format(contrib[-1]))
+        logging.info('Number of contributions: {}'.format(len(contrib)))
+        logging.info('Total: {}'.format(contrib[-1]))
         return contrib
 
 
@@ -193,8 +193,6 @@ class ProbabilitySimulation(ValueBetSimulation):
         min_prob, min_return, max_return, websites = params[cls.MIN_PROB], params[cls.MIN_RETURN],\
                                                      params[cls.MAX_RETURN], params[cls.WEBSITES]
         odd_times = cls.get_odd_times(side)
-        print('Match: {}'.format(match))
-        print('Odd times: {}'.format(odd_times))
         for current_time in odd_times.values():
             current_odds = cls.current_numbers(side['odds'], current_time, odd_times)
             best_website, best_odd = cls.get_best_odd(current_odds, websites)

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import math
+import logging
 
 import matplotlib.pyplot as plt
 
@@ -11,7 +12,7 @@ BET_FACTOR = 0.5
 
 
 def get_value_bets(params, matches):
-    print('Parameters: {}'.format(params))
+    logging.info('Parameters: {}'.format(params))
     bet_matches = set()
     bet_odd_power = params[ValueBetSimulation.BET_ODD_POWER]
     for summary, match in matches.items():
@@ -25,7 +26,7 @@ def get_value_bets(params, matches):
 
 
 def get_matches_summary(bet_matches):
-    print('Creating matches summary...')
+    logging.info('Creating matches summary...')
     text = ''
     for summary, side_id, website, odd, match_datetime, bet_fraction in sorted(bet_matches, key=lambda x: x[4]):
         text += '{} ({}; {}; {}; {})\n'.format(summary, side_id, odd, website, bet_fraction)

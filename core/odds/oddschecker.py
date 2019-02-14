@@ -1,11 +1,14 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from core.common import download
-from core.common.model import Match
-from bs4 import BeautifulSoup
 import locale
 import datetime
+import logging
+
+from bs4 import BeautifulSoup
+
+from core.common import download
+from core.common.model import Match
 
 
 ODDSCHECKER_URL = 'https://www.oddschecker.com'
@@ -53,12 +56,12 @@ def decode_match(match_url, home_team_name, away_team_name):
             odd_list.append(float(odd_tag['data-odig']))
         match.teams[side_id].odds = get_cleaned_odds(websites, odd_list)
 
-    print('Decoded match: {}'.format(match))
+    logging.info('Decoded match: {}'.format(match))
     return match
 
 
 def get_matches_with_odds_from_url(league_url):
-    print('Processing league {}'.format(league_url))
+    logging.info('Processing league {}'.format(league_url))
     league_page = download.get_page(league_url)
     matches = []
     soup = BeautifulSoup(league_page, 'html.parser')

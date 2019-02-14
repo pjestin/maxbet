@@ -18,11 +18,11 @@ def download_data(url, file_path):
     else:
         file_time = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
         file_age = datetime.datetime.today() - file_time
-        print('File age: {}'.format(file_age))
+        logging.info('File age: {}'.format(file_age))
         if file_age >= datetime.timedelta(minutes=MAX_FILE_AGE_MINUTES):
             download = True
     if download:
-        print('Downloading data file from URL {}'.format(url))
+        logging.info('Downloading data file from URL {}'.format(url))
         urlretrieve(url, file_path)
 
 

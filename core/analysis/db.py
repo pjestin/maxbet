@@ -5,6 +5,7 @@ import json
 import datetime
 from difflib import SequenceMatcher
 from collections import OrderedDict
+import logging
 
 DATA_FILE = 'core/analysis/data/db.json'
 BACKUP_DATA_FILE = 'core/analysis/data/db.bak.json'
@@ -73,7 +74,7 @@ def get_enriched_data(matches, data):
                 this_match_data = match_data
                 this_summary = summary
                 break
-        print('Updating match: {}'.format(this_summary))
+        logging.info('Updating match: {}'.format(this_summary))
         update_match_data(match, this_match_data, now)
         data[this_summary] = this_match_data
     return sorted_matches_by_time(data)
@@ -126,7 +127,7 @@ def remove_late_odds(data):
                             if number_datetime < match_datetime:
                                 numbers_without_late.append([number_datetime_string, number])
                             else:
-                                print('Removing match number for match {}'.format(summary))
+                                logging.info('Removing match number for match {}'.format(summary))
                         team_data[number_id][website] = numbers_without_late
 
         match_data[SIDES][team_id] = team_data
@@ -147,7 +148,7 @@ def add_bet_time_zone(data):
                                 number_datetime = datetime.datetime.strptime(number_datetime_string, '%Y-%m-%dT%H:%M')
                                 number_datetime = number_datetime.replace(tzinfo=datetime.timezone.utc)
                                 number_datetime_string = number_datetime.strftime(DATE_TIME_FORMAT)
-                                print('Adding timezone {}'.format(number_datetime_string))
+                                logging.info('Adding timezone {}'.format(number_datetime_string))
                             numbers_with_time_zones.append([number_datetime_string, number])
                         team_data[number_id][website] = numbers_with_time_zones
 
@@ -157,7 +158,7 @@ def add_bet_time_zone(data):
 
 def sorted_matches_by_time(data):
     sorted_data = OrderedDict(sorted(data.items()))
-    print('Sorted {} matches'.format(len(sorted_data)))
+    logging.info('Sorted {} matches'.format(len(sorted_data)))
     return sorted_data
 
 
@@ -170,10 +171,10 @@ def remove_useless_matches(data):
                 and (ODDS not in match_data[SIDES][SIDE_1] or not match_data[SIDES][SIDE_1][ODDS]) \
                 and (ODDS not in match_data[SIDES][SIDE_N] or not match_data[SIDES][SIDE_N][ODDS]) \
                 and (ODDS not in match_data[SIDES][SIDE_2] or not match_data[SIDES][SIDE_2][ODDS]):
-            print('Deleting match: {}'.format(match_data))
+            logging.info('Deleting match: {}'.format(match_data))
             del data[summary]
             count += 1
-    print('Deleted {} matches'.format(count))
+    logging.info('Deleted {} matches'.format(count))
 
 
 def patch():
@@ -197,5 +198,5 @@ def print_finished_matches_without_score():
         if match_datetime < now - datetime.timedelta(hours=2) and \
                 (SCORE not in match_data[SIDES][SIDE_1] or SCORE not in match_data[SIDES][SIDE_1]):
             count += 1
-            print('Finished match without score: {}'.format(summary))
-    print('Number of incomplete matches: {}'.format(count))
+            logging.info('Finished match without score: {}'.format(summary))
+    logging.info('Number of incomplete matches: {}'.format(count))

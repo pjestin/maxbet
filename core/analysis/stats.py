@@ -1,11 +1,14 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from .simulation import Simulation, ValueBetSimulation
 import datetime
 import statistics
-import matplotlib.pyplot as plt
 import math
+import logging
+
+import matplotlib.pyplot as plt
+
+from .simulation import Simulation, ValueBetSimulation
 
 DATE_FORMAT = '%Y-%m-%dT%H'
 BET_ODD_POWER = 0.
@@ -39,8 +42,8 @@ def stats_on_day(match_data):
                     else:
                         day_lose += time_difference
                         count_lose += 1
-    print('Average time for wins: {}'.format(day_win / count_win))
-    print('Average time for loses: {}'.format(day_lose / count_lose))
+    logging.info('Average time for wins: {}'.format(day_win / count_win))
+    logging.info('Average time for loses: {}'.format(day_lose / count_lose))
 
 
 def get_contrib_per_return(match_data):

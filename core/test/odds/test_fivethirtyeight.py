@@ -19,13 +19,11 @@ class FiveThirtyEightTest(unittest.TestCase):
             matches = fivethirtyeight.get_matches()
             self.assertEqual(317, len(matches))
             match = matches[0]
-            print('Match: {}'.format(match))
 
             match_datetime = datetime(2018, 11, 24, 10, 30, tzinfo=timezone.utc)
             expected_match = Match(match_datetime, TEAM_1_NAME, TEAM_2_NAME)
             expected_match.teams['1'].probs[FIVETHIRTYEIGHT] = 0.41623
             expected_match.teams['N'].probs[FIVETHIRTYEIGHT] = 0.2934
             expected_match.teams['2'].probs[FIVETHIRTYEIGHT] = 0.29038
-            print('Expected match: {}'.format(expected_match))
 
             self.assertEqual(expected_match, match)

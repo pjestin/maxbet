@@ -1,14 +1,17 @@
 #! /usr/bin/env python3
 # coding: utf-8
 
-from core.common import download
-from core.common.model import Match
-from bs4 import BeautifulSoup
 import datetime
 import locale
 import re
 import unidecode
 import math
+import logging
+
+from bs4 import BeautifulSoup
+
+from core.common import download
+from core.common.model import Match
 
 
 URL_ROOT = 'http://www.cotes.fr/{}'
@@ -17,7 +20,7 @@ WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
 
 
 def get_matches_with_odds_from_url(url):
-    print('Processing league {}'.format(url))
+    logging.info('Processing league {}'.format(url))
     locale.setlocale(locale.LC_ALL, 'fr_FR')
     matches = []
     page = download.get_page(url)
@@ -38,7 +41,7 @@ def get_matches_with_odds_from_url(url):
                 sure_bet = 'surebetbox' in subrow.attrs['class']
                 match = Match(match_time, team1, team2)
                 match.sure_bet = sure_bet
-                print('Decoded match: {}'.format(match))
+                logging.info('Decoded match: {}'.format(match))
                 matches.append(match)
             elif 'class' in row_attr:
                 website = row_attr['title'][12:]
@@ -50,7 +53,7 @@ def get_matches_with_odds_from_url(url):
                 matches[-1].teams['N'].odds[website] = oddx
                 matches[-1].teams['2'].odds[website] = odd2
     except ValueError:
-        print('Parsing of match failed')
+        logging.error('Parsing of match failed')
     return matches
 
 
