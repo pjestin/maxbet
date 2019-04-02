@@ -78,9 +78,6 @@
                             <a href="{% url 'dashboard:analyse' %}"><i class="fa fa-bar-chart-o fa-fw"></i> Analyse</a>
                         </li>
                         <li>
-                            <a href="{% url 'dashboard:optimise' %}"><i class="fa fa-wrench fa-fw"></i> Optimise</a>
-                        </li>
-                        <li>
                             <a href="{% url 'dashboard:bet' %}"><i class="fa fa-play-circle fa-fw"></i> Bet</a>
                         </li>
                     </ul>
@@ -109,12 +106,31 @@
 
     <!-- Morris Charts JavaScript -->
     <script src="{% static 'dashboard/js/raphael.min.js' %}"></script>
-    <script src="{% static 'dashboard/js/morris.js' %}"></script>
+    <script src="{% static 'dashboard/js/morris.min.js' %}"></script>
 
     <!-- Custom Theme JavaScript -->
     <script src="{% static 'dashboard/js/sb-admin-2.js' %}"></script>
 
-    <script src="{% static 'dashboard/js/charts.js' %}"></script>
+    <!-- Dynamic diagrams -->
+    <script>
+        $(function() {
+            new Morris.Line({
+                element: 'bet-simulation',
+                data: [
+                    {% for index, money in bet_sim %}
+                        { index: {{ index }}, money: {{ money }} },
+                    {% endfor %}
+                ],
+                xkey: 'index',
+                ykeys: ['money'],
+                labels: ['Money'],
+                pointSize: 0,
+                parseTime: false,
+                ymin: {{ymin}},
+                ymax: {{ymax}}
+            });
+        });
+    </script>
 </body>
 
 </html>

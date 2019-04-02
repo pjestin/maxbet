@@ -62,6 +62,19 @@ class DbTest(unittest.TestCase):
         data = {}
         self.assertEqual(self.data_after_register, db.get_enriched_data([match], data))
 
+    def test_find_matching_match_summary(self):
+        data = self.data_before_enrich
+
+        match1 = Match(self.time, self.team_1_name, self.team_2_name)
+        self.assertEqual('2018-08-15T11:57+0000 FC Barcelona - Anderlecht',
+                         db.find_matching_match_summary(match1, data))
+
+        match2 = Match(self.time + timedelta(hours=1), self.team_1_name, self.team_2_name)
+        self.assertEqual(None, db.find_matching_match_summary(match2, data))
+
+        match3 = Match(self.time, self.team_2_name, '')
+        self.assertEqual(None, db.find_matching_match_summary(match3, data))
+
     @patch('datetime.datetime')
     def test_get_enriched_data(self, mocked_datetime):
         mocked_datetime.utcnow.return_value = self.time - timedelta(minutes=3251)

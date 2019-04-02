@@ -4,8 +4,6 @@
 import argparse
 import logging
 
-import scipy.optimize as optimize
-
 from core.common import distribution
 from core.odds import cotes, scibet, fivethirtyeight, oddschecker, sportinglife
 from core.analysis import db, stats
@@ -14,9 +12,8 @@ from core.analysis.simulation import Simulation, ValueBetSimulation, Probability
 
 REGISTER = 'register'
 ANALYSE = 'analyse'
-OPTIMISE = 'optimise'
 BET = 'bet'
-ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
+ACTIONS = [REGISTER, ANALYSE, BET]
 
 # WEBSITES = []
 # WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
@@ -29,9 +26,14 @@ ACTIONS = [REGISTER, ANALYSE, OPTIMISE, BET]
 #             'Redzone', 'Betway', 'BetBright', '10Bet', 'Sportingbet', '188Bet', 'Royal Panda', 'Sport Nation',
 #             'Betfair', 'Matchbook', 'Smarkets']
 # WEBSITES = ['Skybet', 'Marathon Bet', 'Betfair Sportsbook', 'Coral', 'Boyle Sports', 'Betway', 'Sportingbet',
-#             '888sport', 'Royal Panda', 'Sport Nation', 'Betfair', 'Smarkets', 'Spreadex']
-# WEBSITES = ['Marathon Bet', 'Betway', 'Sportingbet', 'Matchbook', 'Smarkets']
-WEBSITES = ['Betway', 'William Hill', 'Sportingbet', 'Coral', 'Betdaq']
+#             '888sport', 'Royal Panda', 'Sport Nation', 'Betfair', 'Spreadex']
+# WEBSITES = ['Betway', 'William Hill', 'Sportingbet', 'Coral', 'Betdaq']
+# WEBSITES = ['Boyle Sports', 'Coral', 'Betway', 'Sportingbet', 'Royal Panda', 'Sport Nation']
+WEBSITES = ['Smarkets']
+
+PARAMS = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.15,
+          Simulation.MIN_RETURN: 1., Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
+          Simulation.BET_FACTOR: .5 / len(WEBSITES)}
 
 
 def register_matches():
@@ -52,10 +54,7 @@ def print_analysis():
     # stats.stats_on_return_integral(match_data)
     # stats.stats_on_probabilities(match_data)
 
-    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.3,
-              Simulation.MIN_RETURN: 1.05, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
-              Simulation.BET_FACTOR: .5 / len(WEBSITES)}
-    distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, params))
+    distribution.plot_log(ValueBetSimulation.simulate_bets(match_data, PARAMS))
     # distribution.plot(ValueBetSimulation.simulate_contributions(match_data, params))
     # distribution.plot_log(ProbabilitySimulation.simulate_bets(match_data, params))
 
@@ -64,25 +63,9 @@ def print_analysis():
     # distribution.plot_log(TradeSimulation.simulate_bets(match_data, params))
 
 
-def find_best_parameters():
-    match_data = db.get_match_data()
-    x_0 = [1.2, 0.25, 0.98, 5.]
-    bounds = [(0., 5.), (0., 1.), (0., 2.), (0., 2.)]
-    result = optimize.minimize(fun=lambda x: -ValueBetSimulation.simulate_bets(match_data, x)[-1],
-                               x0=x_0, bounds=bounds, method='SLSQP', options={'eps': 0.001})
-    if result.success:
-        fitted_params = result.x
-        logging.info(fitted_params)
-    else:
-        raise ValueError(result.message)
-
-
 def print_interesting_matches():
     matches = db.get_future_match_data()
-    params = {Simulation.BET_ODD_POWER: 2., Simulation.BET_RETURN_POWER: 0., Simulation.MIN_PROB: 0.3,
-              Simulation.MIN_RETURN: 1.05, Simulation.MAX_RETURN: 100., Simulation.WEBSITES: WEBSITES,
-              Simulation.BET_FACTOR: .5}
-    bet_matches = distribution.get_value_bets(params, matches)
+    bet_matches = distribution.get_value_bets(PARAMS, matches)
     matches_summary = distribution.get_matches_summary(bet_matches)
     logging.info('Matches summary:\n{}'.format(matches_summary))
 
@@ -104,8 +87,6 @@ def main():
         register_matches()
     elif args.action == ANALYSE:
         print_analysis()
-    elif args.action == OPTIMISE:
-        find_best_parameters()
     elif args.action == BET:
         print_interesting_matches()
 

@@ -22,7 +22,7 @@ PROBS = 'probs'
 DATETIME = 'datetime'
 SCORE = 'score'
 
-MINIMUM_STRING_RATIO = 0.7
+MINIMUM_STRING_RATIO = 0.8
 
 
 def are_strings_similar(s1, s2):
@@ -63,21 +63,29 @@ def update_match_data(match, match_data, now):
             team_data[SCORE] = team.score
 
 
+def find_matching_match_summary(match, data):
+    for summary in reversed(list(data.keys())):
+        if is_match(match, data[summary]):
+            return summary
+    return None
+
+
 def get_enriched_data(matches, data):
     now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).strftime(DATE_TIME_FORMAT)
+    sorted_data = sorted_matches_by_time(data)
     for match in matches:
-        datetime_string = match.datetime.strftime(DATE_TIME_FORMAT)
-        this_match_data = {DATETIME: datetime_string, SIDES: {SIDE_1: {}, SIDE_N: {}, SIDE_2: {}}}
-        this_summary = '{} {} - {}'.format(datetime_string, match.teams[SIDE_1].name, match.teams[SIDE_2].name)
-        for summary, match_data in data.items():
-            if is_match(match, match_data):
-                this_match_data = match_data
-                this_summary = summary
-                break
+        matching_summary = find_matching_match_summary(match, sorted_data)
+        if matching_summary:
+            this_summary = matching_summary
+            this_match_data = sorted_data[matching_summary]
+        else:
+            datetime_string = match.datetime.strftime(DATE_TIME_FORMAT)
+            this_summary = '{} {} - {}'.format(datetime_string, match.teams[SIDE_1].name, match.teams[SIDE_2].name)
+            this_match_data = {DATETIME: datetime_string, SIDES: {SIDE_1: {}, SIDE_N: {}, SIDE_2: {}}}
         logging.info('Updating match: {}'.format(this_summary))
         update_match_data(match, this_match_data, now)
-        data[this_summary] = this_match_data
-    return sorted_matches_by_time(data)
+        sorted_data[this_summary] = this_match_data
+    return sorted_matches_by_time(sorted_data)
 
 
 def enrich(matches):

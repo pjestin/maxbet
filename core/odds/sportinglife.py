@@ -4,13 +4,14 @@ import re
 from datetime import datetime, timezone
 import logging
 import unidecode
+import locale
 
 from bs4 import BeautifulSoup
 
 from core.common.model import Match
 
 
-DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.000%z'
+DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.000Z'
 THRESHOLD_DATE = datetime(2018, 11, 1, tzinfo=timezone.utc)
 
 FOOTBALL = 'football'
@@ -46,12 +47,13 @@ def get_json_data(url):
 
 def get_matches_from_url(url):
     logging.info('Processing league: {}'.format(url))
+    locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
     json_data = get_json_data(url)
     matches = []
     if MATCHES not in json_data[FOOTBALL][COMPETITION_MATCHES]:
         return []
     for match_data in json_data[FOOTBALL][COMPETITION_MATCHES][MATCHES][MATCH]:
-        match_datetime = datetime.strptime(match_data[MATCH_DATE], DATE_TIME_FORMAT)
+        match_datetime = datetime.strptime(match_data[MATCH_DATE], DATE_TIME_FORMAT).replace(tzinfo = timezone.utc)
         if match_data[STATE] != FULL_TIME or FULL_TIME_SCORE not in match_data or match_datetime < THRESHOLD_DATE:
             continue
         home_team_name = unidecode.unidecode(match_data[TEAM_SCORE_A][TEAM][NAME])

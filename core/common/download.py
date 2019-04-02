@@ -32,4 +32,6 @@ def get_page(url):
         return urlopen(req).read()
     except URLError as e:
         logging.error('Error while trying to get page {}: {}'.format(url, e))
+    except:
+        logging.error('Error while trying to get page {}'.format(url))
     return None

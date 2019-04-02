@@ -5,7 +5,6 @@ import pytz
 
 
 TIE = 'Tie'
-TIMEZONE = 'Europe/Paris'
 WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Scibet']
 MIN_PROB = 0.16
 MIN_RETURN = 0.94
@@ -20,7 +19,7 @@ class Match:
         self.sure_bet = False
 
     def __str__(self):
-        result = "{}: {} vs {}".format(self.datetime.astimezone(pytz.timezone(TIMEZONE)).isoformat(),
+        result = "{}: {} vs {}".format(self.datetime.isoformat(),
                                        self.teams['1'].name, self.teams['2'].name)
         if self.sure_bet:
             result += ' !! SURE BET !!'

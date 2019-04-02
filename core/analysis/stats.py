@@ -15,10 +15,12 @@ BET_ODD_POWER = 0.
 RESOLUTION = 0.005
 PROB_POWER = 1.
 
-WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
-            'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
-            '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
-            'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+# WEBSITES = ['Bet365', 'Skybet', 'Ladbrokes', 'William Hill', 'Marathon Bet', 'Betfair Sportsbook',
+#             'Bet Victor', 'Paddy Power', 'Coral', 'Boyle Sports', 'Black Type', 'Redzone', 'Betway', 'BetBright',
+#             '10Bet', 'Sportingbet', '188Bet', '888sport', 'SportPesa', 'Royal Panda', 'Sport Nation', 'Betfair',
+#             'Betdaq', 'Matchbook', 'Betfred', 'Smarkets', 'Spreadex']
+
+WEBSITES = ['Smarkets']
 
 
 def stats_on_day(match_data):
@@ -60,7 +62,7 @@ def get_contrib_per_return(match_data):
                 best_website, best_odd = ValueBetSimulation.get_best_odd(current_odds, WEBSITES)
                 prob = ValueBetSimulation.get_prob(current_odds, margins)
                 rounded_return = float(int(best_odd * math.pow(prob, PROB_POWER) / RESOLUTION)) * RESOLUTION
-                contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER, prob, 0.)
+                contrib = ValueBetSimulation.get_contribution(best_odd, result == side_id, BET_ODD_POWER, prob, 0., .5)
                 if rounded_return not in contrib_per_return:
                     contrib_per_return[rounded_return] = []
                 contrib_per_return[rounded_return].append(contrib)

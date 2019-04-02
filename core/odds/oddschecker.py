@@ -63,6 +63,8 @@ def decode_match(match_url, home_team_name, away_team_name):
 def get_matches_with_odds_from_url(league_url):
     logging.info('Processing league {}'.format(league_url))
     league_page = download.get_page(league_url)
+    if not league_page:
+        return []
     matches = []
     soup = BeautifulSoup(league_page, 'html.parser')
     for row in soup.find_all('tr', {'class': 'match-on'}):
@@ -80,7 +82,7 @@ def get_matches_with_odds_from_url(league_url):
 
 
 def get_matches_with_odds():
-    locale.setlocale(locale.LC_ALL, 'en_GB')
+    locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
     matches = []
     page = download.get_page(URL_ROOT.format('leagues-cups'))
     soup = BeautifulSoup(page, 'html.parser')
