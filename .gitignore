@@ -108,3 +108,5 @@ cache/
 
 .idea
 migrations
+
+db.bak.json
