@@ -9,6 +9,7 @@ import math
 import logging
 
 from bs4 import BeautifulSoup
+import pytz
 
 from core.common import download
 from core.common.model import Match
@@ -21,7 +22,8 @@ WEBSITES = ['ZEbet', 'Betclic', 'ParionsWeb', 'Winamax']
 
 def get_matches_with_odds_from_url(url):
     logging.info('Processing league {}'.format(url))
-    locale.setlocale(locale.LC_ALL, 'fr_FR')
+    locale.setlocale(locale.LC_ALL, 'fr')
+    paris = pytz.timezone('Europe/Paris')
     matches = []
     page = download.get_page(url)
     soup = BeautifulSoup(page, 'html.parser')
@@ -36,8 +38,7 @@ def get_matches_with_odds_from_url(url):
                 subrow = row.find('td', {'class': re.compile('maincol.*')})
                 match_text = subrow.get_text()
                 regex_match = re.search('(\d* \w* \d{4} à \d{2}h\d{2})', match_text)
-                match_time = datetime.datetime.strptime(regex_match.group(0), '%d %B %Y à %Hh%M')\
-                    .replace(tzinfo=datetime.timezone(datetime.timedelta(hours=1)))
+                match_time = paris.localize(datetime.datetime.strptime(regex_match.group(0), '%d %B %Y à %Hh%M'))
                 sure_bet = 'surebetbox' in subrow.attrs['class']
                 match = Match(match_time, team1, team2)
                 match.sure_bet = sure_bet

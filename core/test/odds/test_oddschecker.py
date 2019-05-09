@@ -3,13 +3,13 @@ from unittest.mock import patch, call
 from core.common.model import Match
 from core.odds import oddschecker
 from datetime import datetime, timezone, timedelta
+import core.common.download
 
 
 ODDSCHECKER_TEST_FILE_MATCH = 'core/test/odds/data/oddschecker_match.html'
+ODDSCHECKER_TEST_FILE_MATCH_DST = 'core/test/odds/data/oddschecker_match_dst.html'
 ODDSCHECKER_TEST_FILE_LEAGUE = 'core/test/odds/data/oddschecker_league.html'
 ODDSCHECKER_TEST_FILE_FOOTBALL = 'core/test/odds/data/oddschecker_football.html'
-HOME_TEAM_NAME = 'Aberdeen'
-AWAY_TEAM_NAME = 'Dundee'
 FAKE_URL = 'fake/url'
 ODDSCHECKER_EREDIVISIE_URL = 'https://www.oddschecker.com/football/netherlands/eredivisie/{}/winner'
 ODDSCHECKER_FOOTBALL_ROOT = 'https://www.oddschecker.com/football/{}'
@@ -23,11 +23,13 @@ class OddsCheckerTest(unittest.TestCase):
         match_datetime = datetime(2018, 12, 18, 19, 45, tzinfo=timezone.utc)
         mocked_datetime.utcnow.return_value = match_datetime - timedelta(minutes=3251)
         mocked_datetime.strptime = datetime.strptime
+        home_team_name = 'Aberdeen'
+        away_team_name = 'Dundee'
         with open(ODDSCHECKER_TEST_FILE_MATCH, encoding='latin_1', newline='') as match_page:
             mocked_get_page.return_value = match_page
-            match = oddschecker.decode_match(FAKE_URL, HOME_TEAM_NAME, AWAY_TEAM_NAME)
+            match = oddschecker.decode_match(FAKE_URL, home_team_name, away_team_name)
 
-            expected_match = Match(match_datetime, HOME_TEAM_NAME, AWAY_TEAM_NAME)
+            expected_match = Match(match_datetime, home_team_name, away_team_name)
             expected_match.teams['1'].odds = {'Unibet': 1.54, 'Bet365': 1.53, 'Skybet': 1.44, 'Ladbrokes': 1.57,
                                               'William Hill': 1.5, 'Marathon Bet': 1.52, 'Betfair Sportsbook': 1.53,
                                               'Bet Victor': 1.55, 'Paddy Power': 1.5, 'Coral': 1.57, 'Betfred': 1.53,
@@ -51,6 +53,42 @@ class OddsCheckerTest(unittest.TestCase):
                                               '888sport': 6.75, 'SportPesa': 6.75, 'Spreadex': 7.0, 'Sport Nation': 6.6,
                                               'Betfair': 7.08, 'Betdaq': 7.27, 'Matchbook': 7.39, 'Smarkets': 7.47}
 
+            self.assertEqual(expected_match, match)
+
+    @patch('datetime.datetime')
+    @patch('core.common.download.get_page')
+    def test_decode_match_dst(self, mocked_get_page, mocked_datetime):
+        match_datetime = datetime(2019, 5, 8, 20, 00, tzinfo=timezone(timedelta(hours=1)))
+        mocked_datetime.utcnow.return_value = match_datetime - timedelta(minutes=3251)
+        mocked_datetime.strptime = datetime.strptime
+        home_team_name = 'Ajax'
+        away_team_name = 'Tottenham'
+        with open(ODDSCHECKER_TEST_FILE_MATCH_DST, encoding='latin_1', newline='') as match_page:
+            mocked_get_page.return_value = match_page
+            match = oddschecker.decode_match(FAKE_URL, home_team_name, away_team_name)
+
+            expected_match = Match(match_datetime, home_team_name, away_team_name)
+            expected_match.teams['1'].odds = {'10Bet': 2.25, '888sport': 2.25, 'Bet Victor': 2.3, 'Bet365': 2.3,
+                'Betdaq': 2.33, 'Betfair': 2.29, 'Betfair Sportsbook': 2.3, 'Betfred': 2.3, 'Bethard': 2.35,
+                'Betway': 2.3, 'Black Type': 2.2, 'Boyle Sports': 2.25, 'Coral': 2.3, 'Ladbrokes': 2.25, 'Marathon Bet': 2.3,
+                'Matchbook': 2.34, 'MoPlay': 2.15, 'Paddy Power': 2.25, 'Redzone': 2.25, 'Royal Panda': 2.23, 'Skybet': 2.25,
+                'Smarkets': 2.33, 'Sport Nation': 2.25, 'SportPesa': 2.25, 'Sportingbet': 2.25, 'Spreadex': 2.3, 'Unibet': 2.27,
+                'William Hill': 2.25}
+            expected_match.teams['N'].odds = {'10Bet': 3.65, '888sport': 3.7, 'Bet Victor': 3.7, 'Bet365': 3.75,
+                'Betdaq': 3.69, 'Betfair': 3.61, 'Betfair Sportsbook': 3.7, 'Betfred': 3.7, 'Bethard': 3.65, 'Betway': 3.6,
+                'Black Type': 3.6, 'Boyle Sports': 3.6, 'Coral': 3.6, 'Ladbrokes': 3.5, 'Marathon Bet': 3.68,
+                'Matchbook': 3.71, 'MoPlay': 3.55, 'Paddy Power': 3.5, 'Redzone': 3.65, 'Royal Panda': 3.61, 'Skybet': 3.6,
+                'Smarkets': 3.65, 'Sport Nation': 3.65, 'SportPesa': 3.65, 'Sportingbet': 3.7, 'Spreadex': 3.6, 'Unibet': 3.75,
+                'William Hill': 3.6}
+            expected_match.teams['2'].odds = {'10Bet': 3.05, '888sport': 3.05, 'Bet Victor': 3.1, 'Bet365': 3.1,
+                'Betdaq': 3.11, 'Betfair': 3.04, 'Betfair Sportsbook': 3.1, 'Betfred': 3.1, 'Bethard': 3.0, 'Betway': 3.1,
+                'Black Type': 3.0, 'Boyle Sports': 3.1, 'Coral': 3.1, 'Ladbrokes': 3.0, 'Marathon Bet': 3.16, 'Matchbook': 3.18,
+                'MoPlay': 3.05, 'Paddy Power': 3.0, 'Redzone': 3.0, 'Royal Panda': 3.07, 'Skybet': 3.0, 'Smarkets': 3.16,
+                'Sport Nation': 3.05, 'SportPesa': 3.05, 'Sportingbet': 3.1, 'Spreadex': 3.1, 'Unibet': 3.15, 'William Hill': 3.2}
+
+            self.assertEqual(expected_match.teams['1'].odds, match.teams['1'].odds)
+            self.assertEqual(expected_match.teams['N'].odds, match.teams['N'].odds)
+            self.assertEqual(expected_match.teams['2'].odds, match.teams['2'].odds)
             self.assertEqual(expected_match, match)
 
     @patch('core.common.download.get_page')

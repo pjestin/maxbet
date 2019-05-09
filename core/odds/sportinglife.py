@@ -47,7 +47,7 @@ def get_json_data(url):
 
 def get_matches_from_url(url):
     logging.info('Processing league: {}'.format(url))
-    locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
+    locale.setlocale(locale.LC_ALL, 'en')
     json_data = get_json_data(url)
     matches = []
     if MATCHES not in json_data[FOOTBALL][COMPETITION_MATCHES]:

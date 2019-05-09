@@ -3,7 +3,7 @@
 
 import os
 import datetime
-from urllib.request import urlopen, urlretrieve, Request
+import urllib.request
 from urllib.error import URLError
 import logging
 
@@ -22,14 +22,17 @@ def download_data(url, file_path):
         if file_age >= datetime.timedelta(minutes=MAX_FILE_AGE_MINUTES):
             download = True
     if download:
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+        urllib.request.install_opener(opener)
         logging.info('Downloading data file from URL {}'.format(url))
-        urlretrieve(url, file_path)
+        urllib.request.urlretrieve(url, file_path)
 
 
 def get_page(url):
     try:
-        req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        return urlopen(req).read()
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        return urllib.request.urlopen(req).read()
     except URLError as e:
         logging.error('Error while trying to get page {}: {}'.format(url, e))
     except:

@@ -6,6 +6,7 @@ import datetime
 import logging
 
 from bs4 import BeautifulSoup
+import pytz
 
 from core.common import download
 from core.common.model import Match
@@ -34,8 +35,8 @@ def decode_match(match_url, home_team_name, away_team_name):
         return None
 
     datetime_string = bet_table['data-time']
-    match_datetime = datetime.datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S')\
-        .replace(tzinfo=datetime.timezone.utc)
+    london = pytz.timezone('Europe/London')
+    match_datetime = london.localize(datetime.datetime.strptime(datetime_string, '%Y-%m-%d %H:%M:%S'))
     if match_datetime < datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc):
         return None
     match = Match(match_datetime, home_team_name, away_team_name)
@@ -82,7 +83,7 @@ def get_matches_with_odds_from_url(league_url):
 
 
 def get_matches_with_odds():
-    locale.setlocale(locale.LC_ALL, 'en_GB.UTF-8')
+    locale.setlocale(locale.LC_ALL, 'en')
     matches = []
     page = download.get_page(URL_ROOT.format('leagues-cups'))
     soup = BeautifulSoup(page, 'html.parser')

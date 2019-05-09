@@ -3,8 +3,10 @@ from core.odds import cotes
 from datetime import datetime, timezone, timedelta
 from core.common.model import Match
 from unittest.mock import patch, call
+import core.common.download
 
 COTES_LEAGUE_PATH = 'core/test/odds/data/cotes-league.html'
+COTES_LEAGUE_DST_PATH = 'core/test/odds/data/cotes-league-dst.html'
 COTES_FOOTBALL_PATH = 'core/test/odds/data/cotes-football.html'
 URL_ROOT = 'http://www.cotes.fr/football/{}'
 TEAM_1_1_NAME = 'FC Astana'
@@ -39,6 +41,25 @@ class CotesTest(unittest.TestCase):
             self.assertEqual(24, len(matches))
             self.assertEqual(self.match_1, matches[0])
             self.assertEqual(self.match_2, matches[2])
+    
+    @patch('core.common.download.get_page')
+    def test_get_matches_wth_odds_from_page_dst(self, mocked_get_page):
+        match_datetime = datetime(2019, 5, 12, 15, 30, tzinfo=timezone(timedelta(hours=2)))
+        expected_match = Match(match_datetime, 'Cologne', 'Regensburg')
+        expected_match.teams['1'].odds = {'Betclic': 1.38, 'Betstars': 1.36, 'Bwin': 1.4, 'NetBet': 1.3, 'PMU': 1.26,
+            'ParionsWeb': 1.4, 'Unibet': 1.36, 'Winamax': 1.38, 'ZEbet': 1.31}
+        expected_match.teams['N'].odds = {'Betclic': 4.4, 'Betstars': 4.1, 'Bwin': 4.25, 'NetBet': 4.6, 'PMU': 4.4,
+            'ParionsWeb': 4.4, 'Unibet': 4.3, 'Winamax': 4.4, 'ZEbet': 4.6}
+        expected_match.teams['2'].odds = {'Betclic': 5.0, 'Betstars': 5.0, 'Bwin': 5.0, 'NetBet': 5.3, 'PMU': 5.6,
+            'ParionsWeb': 5.0, 'Unibet': 5.25, 'Winamax': 5.0, 'ZEbet': 5.3}
+        with open(COTES_LEAGUE_DST_PATH, encoding='latin_1', newline='') as file:
+            mocked_get_page.return_value = file
+            matches = cotes.get_matches_with_odds_from_url(FAKE_URL)
+            self.assertEqual(9, len(matches))
+            self.assertEqual(expected_match.teams['1'].odds, matches[0].teams['1'].odds)
+            self.assertEqual(expected_match.teams['N'].odds, matches[0].teams['N'].odds)
+            self.assertEqual(expected_match.teams['2'].odds, matches[0].teams['2'].odds)
+            self.assertEqual(expected_match, matches[0])
 
     @patch('core.common.download.get_page')
     @patch('core.odds.cotes.get_matches_with_odds_from_url')

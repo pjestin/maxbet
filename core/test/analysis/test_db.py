@@ -13,6 +13,8 @@ DATA_WITH_WRONG_PROBS_FILE = 'core/test/analysis/data/data_with_wrong_probs.json
 DATA_WITHOUT_WRONG_PROBS_FILE = 'core/test/analysis/data/data_without_wrong_probs.json'
 DATA_BEFORE_SORT_FILE = 'core/test/analysis/data/data_before_sort.json'
 DATA_AFTER_SORT_FILE = 'core/test/analysis/data/data_after_sort.json'
+DATA_BEFORE_TIME_SHIFT_CORRECTION_FILE = 'core/test/analysis/data/data_before_time_shift_correction.json'
+DATA_AFTER_TIME_SHIFT_CORRECTION_FILE = 'core/test/analysis/data/data_after_time_shift_correction.json'
 
 FIVETHIRTYEIGHT = '538'
 
@@ -44,7 +46,12 @@ class DbTest(unittest.TestCase):
             self.data_before_sort = json.load(file)
         with open(DATA_AFTER_SORT_FILE, mode='r', encoding='latin-1') as file:
             self.data_after_sort = json.load(file)
+        with open(DATA_BEFORE_TIME_SHIFT_CORRECTION_FILE, mode='r', encoding='latin-1') as file:
+            self.data_before_time_shift_correction = json.load(file)
+        with open(DATA_AFTER_TIME_SHIFT_CORRECTION_FILE, mode='r', encoding='latin-1') as file:
+            self.data_after_time_shift_correction = json.load(file)
 
+            
     def test_similar_strings(self):
         self.assertFalse(db.are_strings_similar('AGF Aarhus', 'Aarhus GF'))
         self.assertTrue(db.are_strings_similar('BrA,ndby IF', 'Brondby IF'))
@@ -111,3 +118,9 @@ class DbTest(unittest.TestCase):
         data = self.data_after_register
         db.remove_useless_matches(data)
         self.assertEqual(self.data_after_register, data)
+
+    def test_correct_odds_with_time_shift(self):
+        self.maxDiff = 120000
+        data = self.data_before_time_shift_correction
+        db.correct_odds_with_time_shift(data)
+        self.assertEqual(self.data_after_time_shift_correction, data)

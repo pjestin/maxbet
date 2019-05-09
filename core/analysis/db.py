@@ -10,7 +10,6 @@ import logging
 DATA_FILE = 'core/analysis/data/db.json'
 BACKUP_DATA_FILE = 'core/analysis/data/db.bak.json'
 DATE_TIME_FORMAT = '%Y-%m-%dT%H:%M%z'
-TIMEZONE = 'Europe/Paris'
 
 SIDES = 'sides'
 SIDE_1 = '1'
@@ -185,12 +184,56 @@ def remove_useless_matches(data):
     logging.info('Deleted {} matches'.format(count))
 
 
+def correct_odds_with_time_shift(data):
+    for summary, match_data in dict(data).items():
+        if SIDES in match_data and SIDE_1 in match_data[SIDES] and ODDS in match_data[SIDES][SIDE_1]\
+            and ('Skybet' in match_data[SIDES][SIDE_1][ODDS] or 'Smarkets' in match_data[SIDES][SIDE_1][ODDS]\
+                or 'Bet365' in match_data[SIDES][SIDE_1][ODDS] or 'ParionsWeb' in match_data[SIDES][SIDE_1][ODDS]\
+                or 'PMU' in match_data[SIDES][SIDE_1][ODDS] or 'Winamax' in match_data[SIDES][SIDE_1][ODDS]):
+            match_datetime = datetime.datetime.strptime(match_data[DATETIME], DATE_TIME_FORMAT)
+            if match_datetime < datetime.datetime(2019, 3, 31, 2, 0, 0, 0, tzinfo=datetime.timezone.utc):
+                continue
+            corrected_timezone = datetime.timezone(datetime.timedelta(hours=2)) if 'PMU' in match_data[SIDES][SIDE_1][ODDS] else datetime.timezone(datetime.timedelta(hours=1))
+            corrected_datetime = match_datetime.replace(tzinfo=corrected_timezone)
+            match_data[DATETIME] = corrected_datetime.strftime(DATE_TIME_FORMAT)
+            del data[summary]
+            
+            matching_summary = None
+            for reference_summary in reversed(list(data.keys())):
+                reference_match_data = data[reference_summary]
+                if datetime.datetime.strptime(reference_match_data[DATETIME], DATE_TIME_FORMAT) == \
+                    datetime.datetime.strptime(match_data[DATETIME], DATE_TIME_FORMAT) and \
+                    (are_strings_similar(reference_match_data[SIDES][SIDE_1][NAME], match_data[SIDES][SIDE_1][NAME]) or
+                    are_strings_similar(reference_match_data[SIDES][SIDE_2][NAME], match_data[SIDES][SIDE_2][NAME])):
+                    matching_summary = reference_summary
+                    break
+
+            if matching_summary:
+                matching_match_data = data[matching_summary]
+                if ODDS not in matching_match_data[SIDES][SIDE_1]:
+                    matching_match_data[SIDES][SIDE_1][ODDS] = {}
+                matching_match_data[SIDES][SIDE_1][ODDS].update(match_data[SIDES][SIDE_1][ODDS])
+                if ODDS not in matching_match_data[SIDES][SIDE_N]:
+                    matching_match_data[SIDES][SIDE_N][ODDS] = {}
+                matching_match_data[SIDES][SIDE_N][ODDS].update(match_data[SIDES][SIDE_N][ODDS])
+                if ODDS not in matching_match_data[SIDES][SIDE_2]:
+                    matching_match_data[SIDES][SIDE_2][ODDS] = {}
+                matching_match_data[SIDES][SIDE_2][ODDS].update(match_data[SIDES][SIDE_2][ODDS])
+                data[matching_summary] = matching_match_data
+                print('Found match: {}'.format(matching_summary))
+            else:
+                new_summary = '{} {} - {}'.format(match_data[DATETIME], match_data[SIDES][SIDE_1][NAME], match_data[SIDES][SIDE_2][NAME])
+                data[new_summary] = match_data
+                print('Correcting: {}'.format(new_summary))
+
+
 def patch():
+    print('patch')
     with open(DATA_FILE) as file:
         data = json.load(file, object_pairs_hook=OrderedDict)
     with open(BACKUP_DATA_FILE, mode='w') as backup:
         json.dump(data, backup)
-    remove_useless_matches(data)
+    correct_odds_with_time_shift(data)
     with open(DATA_FILE, mode='w') as file:
         json.dump(data, file)
 

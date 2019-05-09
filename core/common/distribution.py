@@ -14,7 +14,7 @@ BET_FACTOR = 0.5
 
 def condition_for_current_bet(match, side, params):
     margins = ValueBetSimulation.get_margins(match)
-    if not margins:
+    if not margins or 'odds' not in side:
         return None
     min_prob, min_return, max_return, websites = params[Simulation.MIN_PROB], params[Simulation.MIN_RETURN], \
                                                  params[Simulation.MAX_RETURN], params[Simulation.WEBSITES]

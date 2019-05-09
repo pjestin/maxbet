@@ -110,3 +110,5 @@ cache/
 migrations
 
 db.bak.json
+
+.vscode
